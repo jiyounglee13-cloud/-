@@ -85,8 +85,13 @@ lib/
   knowledgeBase.ts      # 판례 RAG 지식베이스 + 배제 규칙
   rag.ts                # 벡터 검색 + 가드레일 판정
   prompt.ts             # 3단계 프롬프트 아키텍처
+  generate.ts           # 비스트리밍 생성(평가·배치용)
   mydata.ts             # 실손24/마이데이터 연동(stub) + 입력 매핑
   disputeForm.ts        # 금융분쟁조정 신청서 양식 생성
+  eval/
+    cases.ts            # 평가 시나리오(쟁점·가드레일)
+    rubric.ts           # 결정론적 루브릭(가드레일·환각·면책·구조)
+    judge.ts            # LLM-as-judge(주관 품질, 키 게이트)
   embedding.ts          # 임베딩 provider(로컬 해싱 TF-IDF / 원격 어댑터)
   vectorIndex.ts        # dense 벡터 인덱스(provider + 백엔드 위임)
   vectorBackend.ts      # 검색 백엔드(BruteForce / LSH-ANN / Qdrant)
@@ -118,6 +123,8 @@ npm run test:scrub     # PII 스크러빙 단위 테스트
 npm run test:crawler   # 원격 크롤러 HTTP 연동 검증(robots + 목 서버)
 npm run test:ann       # ANN(LSH) recall@k 검증
 npm run test:qdrant    # Qdrant 백엔드 REST 연동 검증(목 서버)
+npm run test:eval      # 평가 루브릭 자체 검증(키 불필요)
+npm run eval           # 생성 품질 평가(가드레일/루브릭/LLM-judge)
 npm run crawl:cases    # 수집→익명화→구조화→data/incoming 적재
 npm run ingest:cases   # 신규 수집 후보(data/incoming) 스키마·PII 검증
 npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
@@ -129,6 +136,20 @@ npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
   신규 판례 수집 검증 → 무결성 검증 → 합성 데이터 재생성 → 회귀 테스트 →
   변경 시 PR 자동 생성(사람 검토 후 머지)
 - **`training/`** — QLoRA 미세조정 설정 및 데이터→학습→vLLM 서빙 절차
+
+## 품질 평가 (Eval)
+
+생성물의 신뢰성을 2단계로 검증한다.
+
+1. **결정론적 루브릭**(`lib/eval/rubric.ts`) — LLM 없이 규칙 기반 채점: 면책 고지
+   포함, **판례 환각 차단**(RAG에 없는 사건번호 인용 적발), 4단 구조, 의료자문 시
+   동시감정 요구, 객관 증빙 반영. 규제·안전 항목은 *치명적* 실패로 분류.
+2. **LLM-as-judge**(`lib/eval/judge.ts`) — 설득력·근거 적합성·문체·규제 안전성을
+   1~5점 채점(`ANTHROPIC_API_KEY` 설정 시).
+
+`npm run eval`은 가드레일 케이스 차단을 우선 검증하고, 키가 있으면 생성+채점까지
+수행한다. `npm run test:eval`은 루브릭이 위반 출력을 정확히 적발하는지 자체
+검증하며 CI 게이트로 동작한다(키 불필요).
 
 ## 진행 현황 / 로드맵 (연구서 기준)
 

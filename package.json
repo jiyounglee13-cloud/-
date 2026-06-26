@@ -12,6 +12,8 @@
     "test:rag": "tsx scripts/test-rag.ts",
     "test:ann": "tsx scripts/test-ann.ts",
     "test:qdrant": "tsx scripts/test-qdrant.ts",
+    "test:eval": "tsx scripts/test-eval.ts",
+    "eval": "tsx scripts/eval.ts",
     "validate:kb": "tsx scripts/validate-kb.ts",
     "ingest:cases": "tsx scripts/ingest-cases.ts",
     "crawl:cases": "tsx scripts/crawl-cases.ts",

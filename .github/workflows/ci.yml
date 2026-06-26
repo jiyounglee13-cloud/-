@@ -37,6 +37,9 @@ jobs:
       - name: Qdrant backend integration test (mock REST)
         run: npm run test:qdrant
 
+      - name: Eval harness self-test (rubric)
+        run: npm run test:eval
+
       - name: Typecheck
         run: npm run typecheck
 
