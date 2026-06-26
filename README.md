@@ -47,7 +47,9 @@
 
 - **Next.js 14 (App Router)** + TypeScript + Tailwind CSS
 - **Anthropic Claude API** (`@anthropic-ai/sdk`) — 기본 모델 `claude-opus-4-8`, 스트리밍 출력
-- RAG: 경량 카테고리·키워드 스코어링(운영 시 임베딩 벡터 검색으로 교체 가능)
+- RAG: TF-IDF 코사인 유사도 벡터 검색(`lib/vectorStore.ts`) — API 키 없이 동작,
+  외부 임베딩 벡터 DB로 교체 가능한 인터페이스
+- 마이데이터(실손24) 연동 stub(`lib/mydata.ts`) — 면책 청구건 자동 불러오기
 
 ## 실행 방법
 
@@ -73,21 +75,29 @@ npm run dev
 
 ```
 app/
-  page.tsx              # 입력 폼 + 스트리밍 출력 UI
+  page.tsx              # 입력 폼 + 마이데이터 패널 + 스트리밍 출력 UI
   layout.tsx
   api/appeal/route.ts   # 가드레일 → RAG → Claude 스트리밍 API
+  api/mydata/route.ts   # 실손24/마이데이터 면책 청구건 조회(stub)
 lib/
   types.ts              # 도메인 타입
   knowledgeBase.ts      # 판례 RAG 지식베이스 + 배제 규칙
-  rag.ts                # 검색 + 가드레일 판정
+  vectorStore.ts        # TF-IDF 코사인 유사도 벡터 검색 엔진
+  rag.ts                # 벡터 검색 + 가드레일 판정
   prompt.ts             # 3단계 프롬프트 아키텍처
+  mydata.ts             # 실손24/마이데이터 연동(stub) + 입력 매핑
+scripts/
+  test-rag.ts           # RAG 검색 순위·가드레일 회귀 테스트
 ```
 
-## 향후 확장 (연구서 기준 로드맵)
+## 진행 현황 / 로드맵 (연구서 기준)
 
-- **실손24 / 마이데이터 API 연계** — `<user_medical_data>` 자동 주입으로 수기 입력·OCR 오류 차단
-- **도메인 특화 미세조정** — 분쟁조정 결정문 익명화 후 합성 데이터 기반 LoRA 파인튜닝
-- **벡터 RAG + CI 파이프라인** — 신규 하급심 판례·분쟁조정 기준 실시간 갱신
+- ✅ **실손24 / 마이데이터 API 연계** — 면책 청구건을 정형 데이터로 불러와
+  `<user_medical_data>` 자동 주입(현재 stub, 실 API 교체 가능)
+- ✅ **벡터 RAG** — TF-IDF 코사인 유사도 검색으로 키워드 매칭 대체
+- ⏳ **외부 임베딩 벡터 DB** — 대규모 판례 코퍼스용 임베딩·ANN 인덱스로 교체
+- ⏳ **도메인 특화 미세조정** — 분쟁조정 결정문 익명화 후 합성 데이터 기반 LoRA 파인튜닝
+- ⏳ **CI 파이프라인** — 신규 하급심 판례·분쟁조정 기준 실시간 갱신
 
 ---
 
