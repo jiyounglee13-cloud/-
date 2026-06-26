@@ -27,6 +27,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
+# 합성 데이터 (재생성 가능 — manifest만 커밋)
+/data/synthetic/*.jsonl
+
 # editor
 .vscode/
 .idea/

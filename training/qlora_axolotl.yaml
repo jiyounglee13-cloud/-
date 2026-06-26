@@ -1,0 +1,61 @@
+# 실손보험 이의신청 도메인 특화 QLoRA 설정 (axolotl 예시)
+#
+# 연구서 방법론: 오픈소스 LLM을 저랭크 적응(LoRA) + 양자화(QLoRA)로 경제적으로
+# 미세조정하고 vLLM으로 서빙한다. 3090급 단일 GPU 환경을 가정한다.
+#
+# 데이터: scripts/generate-synthetic-data.ts 로 생성한 chat-messages JSONL
+#   npm run gen:data   # → data/synthetic/{train,val}.jsonl
+#
+# 학습:  accelerate launch -m axolotl.cli.train training/qlora_axolotl.yaml
+
+# 베이스 모델 (한국어/의료 도메인 오픈 모델로 교체 가능: 예) MedGemma, Falcon)
+base_model: beomi/Llama-3-Open-Ko-8B
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
+
+# 4-bit 양자화 + LoRA (= QLoRA)
+load_in_4bit: true
+adapter: qlora
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_target_modules:
+  - q_proj
+  - k_proj
+  - v_proj
+  - o_proj
+  - gate_proj
+  - up_proj
+  - down_proj
+
+# 데이터셋 (chat-messages 포맷)
+datasets:
+  - path: data/synthetic/train.jsonl
+    type: chat_template
+    field_messages: messages
+test_datasets:
+  - path: data/synthetic/val.jsonl
+    type: chat_template
+    field_messages: messages
+chat_template: chatml
+
+sequence_len: 4096
+sample_packing: true
+pad_to_sequence_len: true
+
+# 단일 GPU(3090 24GB) 친화 설정
+micro_batch_size: 1
+gradient_accumulation_steps: 8
+num_epochs: 3
+optimizer: adamw_bnb_8bit
+learning_rate: 0.0002
+lr_scheduler: cosine
+warmup_ratio: 0.03
+bf16: auto
+gradient_checkpointing: true
+flash_attention: true
+
+output_dir: ./outputs/silson-qlora
+logging_steps: 10
+save_strategy: epoch
+val_set_size: 0.0  # 별도 test_datasets 사용
