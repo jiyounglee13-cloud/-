@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   }
 
   const input = body as AppealInput;
-  const { entries, triggeredExclusions } = retrieve(input);
+  const { entries, triggeredExclusions } = await retrieve(input);
 
   // ── 가드레일: 보상 배제 사안이면 LLM 호출 없이 즉시 차단 안내 ──
   if (triggeredExclusions.length > 0) {

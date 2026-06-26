@@ -52,8 +52,9 @@ const cases: { name: string; input: AppealInput }[] = [
   },
 ];
 
+async function main() {
 for (const c of cases) {
-  const r = retrieve(c.input);
+  const r = await retrieve(c.input);
   console.log(`\n### ${c.name}`);
   if (r.triggeredExclusions.length) {
     console.log(
@@ -65,3 +66,9 @@ for (const c of cases) {
     console.log(`  ${i + 1}. [${e.category}] ${e.title} — ${e.citation}`),
   );
 }
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
