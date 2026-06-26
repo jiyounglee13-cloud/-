@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { chat, llmConfigError } from "../llm";
 import type { AppealInput } from "../types";
 
 /**
@@ -50,23 +50,14 @@ export async function judgeOutput(
   retrievedCitations: string[],
   output: string,
 ): Promise<JudgeScore | null> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return null;
+  // 키 미설정 시 LLM 채점은 생략한다(결정론적 루브릭만 사용).
+  if (llmConfigError()) return null;
 
-  const client = new Anthropic({ apiKey });
-  const msg = await client.messages.create({
-    model: process.env.APPEAL_JUDGE_MODEL || process.env.APPEAL_MODEL || "claude-opus-4-8",
-    max_tokens: 600,
+  const text = await chat({
+    user: buildJudgePrompt(input, retrievedCitations, output),
+    maxTokens: 600,
     temperature: 0,
-    messages: [
-      { role: "user", content: buildJudgePrompt(input, retrievedCitations, output) },
-    ],
   });
-
-  const text = msg.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("");
 
   return parseJudge(text);
 }

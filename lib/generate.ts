@@ -1,6 +1,6 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { retrieve } from "./rag";
 import { SYSTEM_PROMPT, buildUserMessage } from "./prompt";
+import { chat, llmConfigError } from "./llm";
 import { EXCLUSION_RULES } from "./knowledgeBase";
 import type { AppealInput } from "./types";
 
@@ -20,11 +20,9 @@ export interface GenerateResult {
   exclusionIds: string[];
 }
 
-const MODEL = process.env.APPEAL_MODEL || "claude-opus-4-8";
-
 export async function generateAppeal(
   input: AppealInput,
-  opts?: { model?: string; maxTokens?: number },
+  opts?: { maxTokens?: number },
 ): Promise<GenerateResult> {
   const { entries, triggeredExclusions } = await retrieve(input);
   const retrievedCitations = entries.map((e) => e.citation);
@@ -40,24 +38,14 @@ export async function generateAppeal(
     };
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY 미설정 — 생성을 수행할 수 없습니다.");
-  }
+  const configError = llmConfigError();
+  if (configError) throw new Error(`${configError} — 생성을 수행할 수 없습니다.`);
 
-  const client = new Anthropic({ apiKey });
-  const msg = await client.messages.create({
-    model: opts?.model || MODEL,
-    max_tokens: opts?.maxTokens ?? 2500,
-    temperature: 0.2,
+  const output = await chat({
     system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: buildUserMessage(input, entries) }],
+    user: buildUserMessage(input, entries),
+    maxTokens: opts?.maxTokens,
   });
-
-  const output = msg.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("");
 
   return { blocked: false, retrievedCitations, exclusionIds: [], output };
 }

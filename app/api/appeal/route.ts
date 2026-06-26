@@ -1,13 +1,11 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
 import { retrieve } from "@/lib/rag";
 import { SYSTEM_PROMPT, buildUserMessage } from "@/lib/prompt";
+import { streamChat, llmConfigError } from "@/lib/llm";
 import type { AppealInput } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const MODEL = process.env.APPEAL_MODEL || "claude-opus-4-8";
 
 function validate(body: any): body is AppealInput {
   return (
@@ -53,18 +51,11 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return Response.json(
-      {
-        error:
-          "서버에 ANTHROPIC_API_KEY가 설정되지 않았습니다. .env.local 파일을 확인해 주세요.",
-      },
-      { status: 500 },
-    );
+  const configError = llmConfigError();
+  if (configError) {
+    return Response.json({ error: configError }, { status: 500 });
   }
 
-  const client = new Anthropic({ apiKey });
   const userMessage = buildUserMessage(input, entries);
 
   // 검색된 판례 메타데이터를 응답 헤더로 전달(UI 출처 표기용)
@@ -78,21 +69,11 @@ export async function POST(req: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const llmStream = await client.messages.stream({
-          model: MODEL,
-          max_tokens: 2500,
-          temperature: 0.2,
+        for await (const text of streamChat({
           system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: userMessage }],
-        });
-
-        for await (const event of llmStream) {
-          if (
-            event.type === "content_block_delta" &&
-            event.delta.type === "text_delta"
-          ) {
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
+          user: userMessage,
+        })) {
+          controller.enqueue(encoder.encode(text));
         }
         controller.close();
       } catch (err: any) {
