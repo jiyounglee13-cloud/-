@@ -28,6 +28,9 @@ jobs:
       - name: PII scrubbing test
         run: npm run test:scrub
 
+      - name: ANN (LSH) recall test
+        run: npm run test:ann
+
       - name: Typecheck
         run: npm run typecheck
 
