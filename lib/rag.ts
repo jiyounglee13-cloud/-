@@ -1,63 +1,68 @@
 import { KNOWLEDGE_BASE, EXCLUSION_RULES } from "./knowledgeBase";
+import { VectorStore, type VectorDoc } from "./vectorStore";
 import type { AppealInput, KnowledgeEntry, RetrievalResult } from "./types";
 
 /**
- * 경량 검색 증강 생성(RAG) 검색기.
+ * 검색 증강 생성(RAG) 검색기.
  *
- * 운영 환경에서는 임베딩 기반 코사인 유사도(Cosine Similarity) 벡터 검색을
- * 사용해야 하나, 본 MVP에서는 의존성 없이 동작하도록 카테고리 매칭 +
- * 키워드 가중치 스코어링으로 근사한다. 인터페이스는 벡터 검색으로
- * 교체하기 쉽도록 동일하게 유지하였다.
+ * 판례 검색은 TF-IDF 코사인 유사도 벡터 스토어(lib/vectorStore.ts)로 수행한다.
+ * 운영 시 외부 임베딩 기반 벡터 DB로 교체하더라도 retrieve() 인터페이스는
+ * 그대로 유지된다.
+ *
+ * 보상 배제(가드레일) 판정은 의미 검색이 아닌 결정론적 키워드 매칭으로 유지한다.
+ * 법적 차단은 재현 가능하고 명시적이어야 하기 때문이다.
  */
 
-function buildHaystack(input: AppealInput): string {
+/** 지식베이스 항목을 임베딩 대상 텍스트로 변환 */
+function entryToText(e: KnowledgeEntry): string {
+  return `${e.title} ${e.holding} ${e.keywords.join(" ")} ${e.category}`;
+}
+
+// 모듈 로드 시 1회 색인 구축 (서버 프로세스 수명 동안 재사용)
+const store = new VectorStore<KnowledgeEntry>();
+const docs: VectorDoc<KnowledgeEntry>[] = KNOWLEDGE_BASE.map((e) => ({
+  id: e.id,
+  text: entryToText(e),
+  payload: e,
+}));
+store.build(docs);
+
+function buildQuery(input: AppealInput): string {
   return [
     input.diagnosis,
     input.rejectionReason,
     input.patientFacts,
     input.vitalSigns ?? "",
   ]
-    .join(" ")
-    .toLowerCase();
-}
-
-function scoreEntry(entry: KnowledgeEntry, input: AppealInput, haystack: string): number {
-  let score = 0;
-
-  // 동일 카테고리는 강한 신호
-  if (entry.category === input.category) score += 5;
-
-  // 키워드 매칭 가중치
-  for (const kw of entry.keywords) {
-    if (haystack.includes(kw.toLowerCase())) score += 2;
-  }
-
-  // 소비자에게 유리한 논거를 약간 우선 (반박 논리 구성용)
-  if (entry.favorsConsumer) score += 0.5;
-
-  return score;
+    .filter(Boolean)
+    .join(" ");
 }
 
 /**
- * 사용자 입력에 대해 관련 판례를 검색하고, 동시에 보상 배제(가드레일)
- * 규칙 발동 여부를 판정한다.
+ * 사용자 입력에 대해 관련 판례를 벡터 검색하고, 동시에 보상 배제(가드레일)
+ * 규칙 발동 여부를 결정론적으로 판정한다.
  */
 export function retrieve(input: AppealInput, topK = 4): RetrievalResult {
-  const haystack = buildHaystack(input);
+  const haystack = buildQuery(input).toLowerCase();
 
-  // 가드레일: 배제 대상 키워드 탐지
+  // 가드레일: 배제 대상 키워드 탐지 (결정론적)
   const triggeredExclusions = EXCLUSION_RULES.filter((rule) =>
     rule.triggers.some((t) => haystack.includes(t.toLowerCase())),
   );
 
-  const entries = KNOWLEDGE_BASE.map((entry) => ({
-    entry,
-    score: scoreEntry(entry, input, haystack),
-  }))
-    .filter((x) => x.score > 0)
+  // 벡터 검색 (코사인 유사도) + 카테고리/유리논거 가중 후 재정렬
+  const hits = store.search(buildQuery(input), Math.max(topK * 2, 6));
+
+  const reranked = hits
+    .map((h) => {
+      let score = h.score;
+      if (h.payload.category === input.category) score += 0.3; // 동일 카테고리 가중
+      if (h.payload.favorsConsumer) score += 0.05; // 반박 논거 약간 우선
+      return { entry: h.payload, score };
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, topK)
     .map((x) => x.entry);
 
-  return { entries, triggeredExclusions };
+  return { entries: reranked, triggeredExclusions };
 }
