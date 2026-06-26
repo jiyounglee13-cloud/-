@@ -2,6 +2,45 @@
 
 import { useState } from "react";
 import type { AppealInput, DisputeCategory } from "@/lib/types";
+import { claimToAppealInput, type MyDataClaim } from "@/lib/mydata";
+import { buildDisputeMediationForm } from "@/lib/disputeForm";
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** 새 창에 문서를 열어 인쇄(브라우저의 PDF로 저장) */
+function printText(title: string, text: string) {
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("팝업이 차단되었습니다. 팝업을 허용해 주세요.");
+    return;
+  }
+  w.document.write(
+    `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(
+      title,
+    )}</title><style>body{font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;padding:40px 48px;line-height:1.75;white-space:pre-wrap;font-size:13px;color:#111;max-width:800px;margin:0 auto}</style></head><body>${escapeHtml(
+      text,
+    )}</body></html>`,
+  );
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 250);
+}
+
+/** 텍스트 파일 다운로드 */
+function downloadText(filename: string, text: string) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const CATEGORIES: { value: DisputeCategory; label: string; hint: string }[] = [
   {
@@ -54,12 +93,49 @@ export default function Home() {
     vitalSigns: "",
   });
   const [output, setOutput] = useState("");
+  const [disputeForm, setDisputeForm] = useState("");
   const [blocked, setBlocked] = useState(false);
   const [cases, setCases] = useState<RetrievedCase[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 마이데이터(실손24) 연동
+  const [claims, setClaims] = useState<MyDataClaim[]>([]);
+  const [loadingClaims, setLoadingClaims] = useState(false);
+  const [myDataError, setMyDataError] = useState("");
+
   const selected = CATEGORIES.find((c) => c.value === category)!;
+
+  async function loadMyData() {
+    setLoadingClaims(true);
+    setMyDataError("");
+    try {
+      const res = await fetch("/api/mydata");
+      const data = await res.json();
+      if (data.claims) {
+        setClaims(data.claims);
+      } else {
+        setMyDataError(data.error || "조회 결과가 없습니다.");
+      }
+    } catch (e: any) {
+      setMyDataError(e?.message || "마이데이터 조회 중 오류가 발생했습니다.");
+    } finally {
+      setLoadingClaims(false);
+    }
+  }
+
+  function selectClaim(claim: MyDataClaim) {
+    const mapped = claimToAppealInput(claim);
+    setCategory(mapped.category);
+    setForm({
+      diagnosis: mapped.diagnosis,
+      treatmentDate: mapped.treatmentDate,
+      claimAmount: mapped.claimAmount,
+      rejectionReason: mapped.rejectionReason,
+      patientFacts: mapped.patientFacts,
+      vitalSigns: mapped.vitalSigns || "",
+    });
+  }
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -75,6 +151,7 @@ export default function Home() {
     setLoading(true);
     setError("");
     setOutput("");
+    setDisputeForm("");
     setBlocked(false);
     setCases([]);
 
@@ -134,6 +211,10 @@ export default function Home() {
     navigator.clipboard.writeText(output);
   }
 
+  function makeDispute() {
+    setDisputeForm(buildDisputeMediationForm({ category, ...form }, output));
+  }
+
   const canSubmit = form.diagnosis.trim() && form.rejectionReason.trim() && !loading;
 
   return (
@@ -155,6 +236,51 @@ export default function Home() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* 입력 영역 */}
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          {/* 마이데이터(실손24) 연동 */}
+          <div className="mb-5 rounded-lg border border-dashed border-brand/40 bg-brand-light/50 p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-brand-dark">
+                  마이데이터(실손24) 연동 <span className="text-xs font-normal text-slate-500">· 데모</span>
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  면책 처리된 청구 건을 불러와 입력란을 자동으로 채웁니다.
+                </p>
+              </div>
+              <button
+                onClick={loadMyData}
+                disabled={loadingClaims}
+                className="shrink-0 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+              >
+                {loadingClaims ? "불러오는 중…" : "청구내역 불러오기"}
+              </button>
+            </div>
+            {myDataError && <p className="mt-2 text-xs text-red-600">{myDataError}</p>}
+            {claims.length > 0 && (
+              <ul className="mt-3 space-y-2">
+                {claims.map((c) => (
+                  <li key={c.claimId}>
+                    <button
+                      onClick={() => selectClaim(c)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-xs transition hover:border-brand hover:shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-slate-800">{c.diagnosisName}</span>
+                        <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
+                          {c.status}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 text-slate-500">
+                        {c.hospitalName} · {c.treatmentDate} · KCD {c.kcdCode} ·{" "}
+                        {c.claimAmount.toLocaleString("ko-KR")}원
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <h2 className="mb-4 text-lg font-semibold">사건 정보 입력</h2>
 
           <label className="mb-1 block text-sm font-medium">분쟁 유형</label>
@@ -240,12 +366,26 @@ export default function Home() {
               {blocked ? "보상 배제 안내" : "이의신청서 초안"}
             </h2>
             {output && !blocked && (
-              <button
-                onClick={copyOutput}
-                className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
-              >
-                복사
-              </button>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  onClick={copyOutput}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                >
+                  복사
+                </button>
+                <button
+                  onClick={() => printText("이의신청서", output)}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                >
+                  인쇄 / PDF
+                </button>
+                <button
+                  onClick={makeDispute}
+                  className="rounded-md border border-brand bg-brand-light px-2 py-1 text-xs font-medium text-brand-dark hover:bg-brand-light/70"
+                >
+                  분쟁조정 신청서
+                </button>
+              </div>
             )}
           </div>
 
@@ -279,6 +419,41 @@ export default function Home() {
             )}
             {loading && <span className="ml-0.5 animate-pulse">▋</span>}
           </div>
+
+          {disputeForm && (
+            <div className="mt-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-brand-dark">
+                  금융분쟁조정 신청서 양식
+                </h3>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(disputeForm)}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                  >
+                    복사
+                  </button>
+                  <button
+                    onClick={() => printText("금융분쟁조정 신청서", disputeForm)}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                  >
+                    인쇄 / PDF
+                  </button>
+                  <button
+                    onClick={() =>
+                      downloadText("금융분쟁조정_신청서.txt", disputeForm)
+                    }
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                  >
+                    다운로드
+                  </button>
+                </div>
+              </div>
+              <div className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-lg border border-brand/30 bg-white p-4 text-xs leading-relaxed text-slate-800">
+                {disputeForm}
+              </div>
+            </div>
+          )}
         </section>
       </div>
 

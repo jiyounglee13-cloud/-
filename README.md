@@ -47,7 +47,9 @@
 
 - **Next.js 14 (App Router)** + TypeScript + Tailwind CSS
 - **Anthropic Claude API** (`@anthropic-ai/sdk`) — 기본 모델 `claude-opus-4-8`, 스트리밍 출력
-- RAG: 경량 카테고리·키워드 스코어링(운영 시 임베딩 벡터 검색으로 교체 가능)
+- RAG: TF-IDF 코사인 유사도 벡터 검색(`lib/vectorStore.ts`) — API 키 없이 동작,
+  외부 임베딩 벡터 DB로 교체 가능한 인터페이스
+- 마이데이터(실손24) 연동 stub(`lib/mydata.ts`) — 면책 청구건 자동 불러오기
 
 ## 실행 방법
 
@@ -73,21 +75,78 @@ npm run dev
 
 ```
 app/
-  page.tsx              # 입력 폼 + 스트리밍 출력 UI
+  page.tsx              # 입력 폼 + 마이데이터 패널 + 스트리밍 출력 UI
   layout.tsx
   api/appeal/route.ts   # 가드레일 → RAG → Claude 스트리밍 API
+  api/mydata/route.ts   # 실손24/마이데이터 면책 청구건 조회(stub)
+  (page.tsx 내) 인쇄/PDF 저장 · 금융분쟁조정 신청서 양식 생성
 lib/
   types.ts              # 도메인 타입
   knowledgeBase.ts      # 판례 RAG 지식베이스 + 배제 규칙
-  rag.ts                # 검색 + 가드레일 판정
+  rag.ts                # 벡터 검색 + 가드레일 판정
   prompt.ts             # 3단계 프롬프트 아키텍처
+  mydata.ts             # 실손24/마이데이터 연동(stub) + 입력 매핑
+  disputeForm.ts        # 금융분쟁조정 신청서 양식 생성
+  embedding.ts          # 임베딩 provider(로컬 해싱 TF-IDF / 원격 어댑터)
+  vectorIndex.ts        # dense 벡터 인덱스(provider + 백엔드 위임)
+  vectorBackend.ts      # 검색 백엔드(BruteForce / LSH-ANN / Qdrant)
+  backends/qdrant.ts    # Qdrant 벡터 DB REST 실연동 어댑터
+  text.ts               # 한국어 친화 토크나이저
+  scrub.ts              # PII 익명화(스크러빙) 모듈
+  crawler.ts            # 판례 수집 소스 추상화 + 구조화 추출
+scripts/
+  test-rag.ts           # RAG 검색 순위·가드레일 회귀 테스트
+  test-scrub.ts         # PII 스크러빙 단위 테스트
+  validate-kb.ts        # 지식베이스 무결성 검증(CI 게이트)
+  crawl-cases.ts        # 수집→익명화→구조화→data/incoming 적재
+  ingest-cases.ts       # 신규 판례 수집 후보 검증(PII·스키마)
+  generate-synthetic-data.ts  # LoRA 합성 학습 데이터 생성
+training/
+  qlora_axolotl.yaml    # QLoRA 미세조정 설정
+  README.md             # 데이터→학습→vLLM 서빙 절차
+.github/workflows/
+  ci.yml                      # 빌드/검증/테스트
+  update-knowledge-base.yml   # 스케줄 자동 갱신 + PR
 ```
 
-## 향후 확장 (연구서 기준 로드맵)
+## 개발 스크립트 / CI
 
-- **실손24 / 마이데이터 API 연계** — `<user_medical_data>` 자동 주입으로 수기 입력·OCR 오류 차단
-- **도메인 특화 미세조정** — 분쟁조정 결정문 익명화 후 합성 데이터 기반 LoRA 파인튜닝
-- **벡터 RAG + CI 파이프라인** — 신규 하급심 판례·분쟁조정 기준 실시간 갱신
+```bash
+npm run validate:kb    # 판례 지식베이스 무결성 검증(CI 게이트)
+npm run test:rag       # RAG 검색 순위·가드레일 회귀 테스트
+npm run test:scrub     # PII 스크러빙 단위 테스트
+npm run test:crawler   # 원격 크롤러 HTTP 연동 검증(robots + 목 서버)
+npm run test:ann       # ANN(LSH) recall@k 검증
+npm run test:qdrant    # Qdrant 백엔드 REST 연동 검증(목 서버)
+npm run crawl:cases    # 수집→익명화→구조화→data/incoming 적재
+npm run ingest:cases   # 신규 수집 후보(data/incoming) 스키마·PII 검증
+npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
+```
+
+- **`.github/workflows/ci.yml`** — push/PR 시 validate:kb → test:rag →
+  typecheck → build
+- **`.github/workflows/update-knowledge-base.yml`** — 매주 스케줄 실행:
+  신규 판례 수집 검증 → 무결성 검증 → 합성 데이터 재생성 → 회귀 테스트 →
+  변경 시 PR 자동 생성(사람 검토 후 머지)
+- **`training/`** — QLoRA 미세조정 설정 및 데이터→학습→vLLM 서빙 절차
+
+## 진행 현황 / 로드맵 (연구서 기준)
+
+- ✅ **실손24 / 마이데이터 API 연계** — 면책 청구건 정형 데이터 자동 주입(stub)
+- ✅ **벡터 RAG** — TF-IDF 코사인 유사도 검색
+- ✅ **외부 임베딩 벡터 DB 교체 경계** — `EmbeddingProvider` 추상화로 원격
+  임베딩 엔드포인트 전환 가능(`EMBEDDING_*` 환경변수)
+- ✅ **도메인 특화 미세조정 파이프라인** — 익명 합성 데이터 생성 + QLoRA 설정
+- ✅ **자동 갱신 CI 파이프라인** — 무결성·회귀 테스트 및 스케줄 갱신 워크플로
+- ✅ **PII 익명화·수집 파이프라인** — 스크러버 + 소스 추상화 + 구조화 추출
+  (로컬 fixture 동작, 원격 소스는 어댑터 골격)
+- ✅ **ANN 인덱스** — 랜덤 초평면 LSH 기반 근사 최근접(`VECTOR_BACKEND=lsh`),
+  recall@5 ≈ 98% 검증
+- ✅ **외부 벡터 DB 실연동(Qdrant)** — REST 어댑터(`VECTOR_BACKEND=qdrant`),
+  목 서버로 프로토콜 100% 일치 검증. `QDRANT_URL` 설정 시 실 인스턴스 연결
+- ✅ **원격 크롤러 HTTP 연동** — robots 준수 fetch → HTML 평문화 → 익명화 →
+  구조화(`HttpCaseSource`). 목 서버로 검증, `CRAWL_URL` 설정 시 실 URL 수집
+- ⏳ **실 출처 운영 연동** — 금감원/소비자원/판결문 실수집은 이용약관·저작권·법적 검토 후 적용
 
 ---
 

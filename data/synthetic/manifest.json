@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-06-26",
+  "seed": 42,
+  "total": 156,
+  "train": 141,
+  "val": 15,
+  "format": "chat-messages (system/user/assistant) JSONL",
+  "note": "익명 합성 데이터. 실제 PII 미포함. 인용 판례는 검증 필요."
+}

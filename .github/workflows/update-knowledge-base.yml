@@ -1,0 +1,62 @@
+name: Update Knowledge Base
+
+# 신규 하급심 판례·금감원 분쟁조정 기준을 정기적으로 점검·반영하기 위한
+# 지속적 통합(CI) 파이프라인. 실제 크롤링·익명화(Scrubbing)는 외부 단계이며,
+# 그 산출물을 data/incoming/*.json 으로 받아 검증→반영→재학습데이터 생성→
+# 회귀 테스트→PR 생성까지 자동화한다.
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # 매주 월요일 00:00 UTC
+  workflow_dispatch: # 수동 실행 허용
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # 1) 신규 판례 수집 → PII 익명화 → 구조화 (로컬 fixture/원격 어댑터)
+      - name: Crawl & anonymize cases
+        run: npm run crawl:cases
+
+      # 2) 수집 후보 검증 (PII 익명화·스키마 점검)
+      - name: Ingest & validate new cases
+        run: npm run ingest:cases
+
+      # 3) 지식베이스 무결성 검증
+      - name: Validate knowledge base
+        run: npm run validate:kb
+
+      # 4) 합성 학습 데이터 재생성 (지식베이스 변경 반영)
+      - name: Regenerate synthetic dataset
+        run: npm run gen:data
+
+      # 5) RAG 검색 회귀 테스트
+      - name: RAG regression test
+        run: npm run test:rag
+
+      # 6) 변경사항이 있으면 PR 생성 (검토 후 머지)
+      - name: Open PR if changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto/knowledge-base-update
+          title: "chore: 판례 지식베이스 자동 갱신"
+          commit-message: "chore: 판례 지식베이스 자동 갱신"
+          body: |
+            자동 갱신 파이프라인이 생성한 PR입니다.
+            - 신규 수집 후보 검증/반영
+            - 합성 학습 데이터 재생성
+            ⚠️ 인용 판례 원문 대조 등 사람의 검토 후 머지하세요.
+          labels: automated, knowledge-base
