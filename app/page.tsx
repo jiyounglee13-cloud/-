@@ -3,6 +3,44 @@
 import { useState } from "react";
 import type { AppealInput, DisputeCategory } from "@/lib/types";
 import { claimToAppealInput, type MyDataClaim } from "@/lib/mydata";
+import { buildDisputeMediationForm } from "@/lib/disputeForm";
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** 새 창에 문서를 열어 인쇄(브라우저의 PDF로 저장) */
+function printText(title: string, text: string) {
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("팝업이 차단되었습니다. 팝업을 허용해 주세요.");
+    return;
+  }
+  w.document.write(
+    `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(
+      title,
+    )}</title><style>body{font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;padding:40px 48px;line-height:1.75;white-space:pre-wrap;font-size:13px;color:#111;max-width:800px;margin:0 auto}</style></head><body>${escapeHtml(
+      text,
+    )}</body></html>`,
+  );
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 250);
+}
+
+/** 텍스트 파일 다운로드 */
+function downloadText(filename: string, text: string) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const CATEGORIES: { value: DisputeCategory; label: string; hint: string }[] = [
   {
@@ -55,6 +93,7 @@ export default function Home() {
     vitalSigns: "",
   });
   const [output, setOutput] = useState("");
+  const [disputeForm, setDisputeForm] = useState("");
   const [blocked, setBlocked] = useState(false);
   const [cases, setCases] = useState<RetrievedCase[]>([]);
   const [loading, setLoading] = useState(false);
@@ -112,6 +151,7 @@ export default function Home() {
     setLoading(true);
     setError("");
     setOutput("");
+    setDisputeForm("");
     setBlocked(false);
     setCases([]);
 
@@ -169,6 +209,10 @@ export default function Home() {
 
   function copyOutput() {
     navigator.clipboard.writeText(output);
+  }
+
+  function makeDispute() {
+    setDisputeForm(buildDisputeMediationForm({ category, ...form }, output));
   }
 
   const canSubmit = form.diagnosis.trim() && form.rejectionReason.trim() && !loading;
@@ -322,12 +366,26 @@ export default function Home() {
               {blocked ? "보상 배제 안내" : "이의신청서 초안"}
             </h2>
             {output && !blocked && (
-              <button
-                onClick={copyOutput}
-                className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
-              >
-                복사
-              </button>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  onClick={copyOutput}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                >
+                  복사
+                </button>
+                <button
+                  onClick={() => printText("이의신청서", output)}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                >
+                  인쇄 / PDF
+                </button>
+                <button
+                  onClick={makeDispute}
+                  className="rounded-md border border-brand bg-brand-light px-2 py-1 text-xs font-medium text-brand-dark hover:bg-brand-light/70"
+                >
+                  분쟁조정 신청서
+                </button>
+              </div>
             )}
           </div>
 
@@ -361,6 +419,41 @@ export default function Home() {
             )}
             {loading && <span className="ml-0.5 animate-pulse">▋</span>}
           </div>
+
+          {disputeForm && (
+            <div className="mt-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-brand-dark">
+                  금융분쟁조정 신청서 양식
+                </h3>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => navigator.clipboard.writeText(disputeForm)}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                  >
+                    복사
+                  </button>
+                  <button
+                    onClick={() => printText("금융분쟁조정 신청서", disputeForm)}
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                  >
+                    인쇄 / PDF
+                  </button>
+                  <button
+                    onClick={() =>
+                      downloadText("금융분쟁조정_신청서.txt", disputeForm)
+                    }
+                    className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                  >
+                    다운로드
+                  </button>
+                </div>
+              </div>
+              <div className="max-h-[360px] overflow-auto whitespace-pre-wrap rounded-lg border border-brand/30 bg-white p-4 text-xs leading-relaxed text-slate-800">
+                {disputeForm}
+              </div>
+            </div>
+          )}
         </section>
       </div>
 

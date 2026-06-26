@@ -79,12 +79,14 @@ app/
   layout.tsx
   api/appeal/route.ts   # 가드레일 → RAG → Claude 스트리밍 API
   api/mydata/route.ts   # 실손24/마이데이터 면책 청구건 조회(stub)
+  (page.tsx 내) 인쇄/PDF 저장 · 금융분쟁조정 신청서 양식 생성
 lib/
   types.ts              # 도메인 타입
   knowledgeBase.ts      # 판례 RAG 지식베이스 + 배제 규칙
   rag.ts                # 벡터 검색 + 가드레일 판정
   prompt.ts             # 3단계 프롬프트 아키텍처
   mydata.ts             # 실손24/마이데이터 연동(stub) + 입력 매핑
+  disputeForm.ts        # 금융분쟁조정 신청서 양식 생성
   embedding.ts          # 임베딩 provider(로컬 해싱 TF-IDF / 원격 어댑터)
   vectorIndex.ts        # dense 벡터 인덱스(provider + 백엔드 위임)
   vectorBackend.ts      # 검색 백엔드(BruteForce / LSH-ANN / Qdrant)
