@@ -33,6 +33,9 @@ yarn-error.log*
 # 크롤링 수집 산출물 (fixture에서 재생성 가능)
 /data/incoming/
 
+# 평가 리포트 (재생성 가능)
+/data/eval/
+
 # editor
 .vscode/
 .idea/
