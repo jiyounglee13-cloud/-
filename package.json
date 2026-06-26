@@ -13,6 +13,7 @@
     "test:ann": "tsx scripts/test-ann.ts",
     "test:qdrant": "tsx scripts/test-qdrant.ts",
     "test:eval": "tsx scripts/test-eval.ts",
+    "test:llm": "tsx scripts/test-llm-openai.ts",
     "eval": "tsx scripts/eval.ts",
     "validate:kb": "tsx scripts/validate-kb.ts",
     "ingest:cases": "tsx scripts/ingest-cases.ts",
