@@ -46,7 +46,9 @@
 ## 기술 스택
 
 - **Next.js 14 (App Router)** + TypeScript + Tailwind CSS
-- **Anthropic Claude API** (`@anthropic-ai/sdk`) — 기본 모델 `claude-opus-4-8`, 스트리밍 출력
+- **제공사 비종속 LLM 어댑터**(`lib/llm.ts`) — 기본 Anthropic Claude
+  (`claude-opus-4-8`), `LLM_PROVIDER=openai` 설정 시 OpenAI·Gemini·OpenRouter·
+  Groq 등 OpenAI 호환 제공사로 교체 가능. 스트리밍/논스트리밍 모두 지원
 - RAG: TF-IDF 코사인 유사도 벡터 검색(`lib/vectorStore.ts`) — API 키 없이 동작,
   외부 임베딩 벡터 DB로 교체 가능한 인터페이스
 - 마이데이터(실손24) 연동 stub(`lib/mydata.ts`) — 면책 청구건 자동 불러오기
@@ -68,8 +70,14 @@ npm run dev
 
 | 변수 | 설명 | 기본값 |
 | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | Anthropic Claude API 키 (필수) | — |
-| `APPEAL_MODEL` | 사용할 모델 | `claude-opus-4-8` |
+| `LLM_PROVIDER` | `anthropic` \| `openai`(호환) | `anthropic` |
+| `ANTHROPIC_API_KEY` | Anthropic 키(provider=anthropic 시 필수) | — |
+| `APPEAL_MODEL` | Claude 모델 | `claude-opus-4-8` |
+| `LLM_BASE_URL` | OpenAI 호환 엔드포인트(provider=openai) | `https://api.openai.com/v1` |
+| `LLM_API_KEY` | OpenAI 호환 제공사 키 | — |
+| `LLM_MODEL` | OpenAI 호환 모델명 | `gpt-4o-mini` |
+
+> 제공사별 설정 예시(OpenAI·Gemini·OpenRouter·Groq)는 `.env.example` 참고.
 
 ## 프로젝트 구조
 
