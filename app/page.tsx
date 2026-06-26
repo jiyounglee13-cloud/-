@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AppealInput, DisputeCategory } from "@/lib/types";
+import { claimToAppealInput, type MyDataClaim } from "@/lib/mydata";
 
 const CATEGORIES: { value: DisputeCategory; label: string; hint: string }[] = [
   {
@@ -59,7 +60,43 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 마이데이터(실손24) 연동
+  const [claims, setClaims] = useState<MyDataClaim[]>([]);
+  const [loadingClaims, setLoadingClaims] = useState(false);
+  const [myDataError, setMyDataError] = useState("");
+
   const selected = CATEGORIES.find((c) => c.value === category)!;
+
+  async function loadMyData() {
+    setLoadingClaims(true);
+    setMyDataError("");
+    try {
+      const res = await fetch("/api/mydata");
+      const data = await res.json();
+      if (data.claims) {
+        setClaims(data.claims);
+      } else {
+        setMyDataError(data.error || "조회 결과가 없습니다.");
+      }
+    } catch (e: any) {
+      setMyDataError(e?.message || "마이데이터 조회 중 오류가 발생했습니다.");
+    } finally {
+      setLoadingClaims(false);
+    }
+  }
+
+  function selectClaim(claim: MyDataClaim) {
+    const mapped = claimToAppealInput(claim);
+    setCategory(mapped.category);
+    setForm({
+      diagnosis: mapped.diagnosis,
+      treatmentDate: mapped.treatmentDate,
+      claimAmount: mapped.claimAmount,
+      rejectionReason: mapped.rejectionReason,
+      patientFacts: mapped.patientFacts,
+      vitalSigns: mapped.vitalSigns || "",
+    });
+  }
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -155,6 +192,51 @@ export default function Home() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* 입력 영역 */}
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          {/* 마이데이터(실손24) 연동 */}
+          <div className="mb-5 rounded-lg border border-dashed border-brand/40 bg-brand-light/50 p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-brand-dark">
+                  마이데이터(실손24) 연동 <span className="text-xs font-normal text-slate-500">· 데모</span>
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  면책 처리된 청구 건을 불러와 입력란을 자동으로 채웁니다.
+                </p>
+              </div>
+              <button
+                onClick={loadMyData}
+                disabled={loadingClaims}
+                className="shrink-0 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+              >
+                {loadingClaims ? "불러오는 중…" : "청구내역 불러오기"}
+              </button>
+            </div>
+            {myDataError && <p className="mt-2 text-xs text-red-600">{myDataError}</p>}
+            {claims.length > 0 && (
+              <ul className="mt-3 space-y-2">
+                {claims.map((c) => (
+                  <li key={c.claimId}>
+                    <button
+                      onClick={() => selectClaim(c)}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-xs transition hover:border-brand hover:shadow-sm"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-slate-800">{c.diagnosisName}</span>
+                        <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
+                          {c.status}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 text-slate-500">
+                        {c.hospitalName} · {c.treatmentDate} · KCD {c.kcdCode} ·{" "}
+                        {c.claimAmount.toLocaleString("ko-KR")}원
+                      </div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <h2 className="mb-4 text-lg font-semibold">사건 정보 입력</h2>
 
           <label className="mb-1 block text-sm font-medium">분쟁 유형</label>
