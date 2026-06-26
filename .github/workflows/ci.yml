@@ -40,6 +40,9 @@ jobs:
       - name: Eval harness self-test (rubric)
         run: npm run test:eval
 
+      - name: LLM adapter test (OpenAI-compatible / Gemini path)
+        run: npm run test:llm
+
       - name: Typecheck
         run: npm run typecheck
 
