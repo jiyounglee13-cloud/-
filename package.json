@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test:rag": "tsx scripts/test-rag.ts",
     "validate:kb": "tsx scripts/validate-kb.ts",
+    "ingest:cases": "tsx scripts/ingest-cases.ts",
     "gen:data": "tsx scripts/generate-synthetic-data.ts"
   },
   "dependencies": {

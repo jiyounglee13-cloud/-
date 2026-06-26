@@ -82,22 +82,51 @@ app/
 lib/
   types.ts              # 도메인 타입
   knowledgeBase.ts      # 판례 RAG 지식베이스 + 배제 규칙
-  vectorStore.ts        # TF-IDF 코사인 유사도 벡터 검색 엔진
   rag.ts                # 벡터 검색 + 가드레일 판정
   prompt.ts             # 3단계 프롬프트 아키텍처
   mydata.ts             # 실손24/마이데이터 연동(stub) + 입력 매핑
+  embedding.ts          # 임베딩 provider(로컬 해싱 TF-IDF / 원격 어댑터)
+  vectorIndex.ts        # dense 벡터 인덱스(코사인, ANN 교체 가능)
+  text.ts               # 한국어 친화 토크나이저
 scripts/
   test-rag.ts           # RAG 검색 순위·가드레일 회귀 테스트
+  validate-kb.ts        # 지식베이스 무결성 검증(CI 게이트)
+  ingest-cases.ts       # 신규 판례 수집 후보 검증(PII·스키마)
+  generate-synthetic-data.ts  # LoRA 합성 학습 데이터 생성
+training/
+  qlora_axolotl.yaml    # QLoRA 미세조정 설정
+  README.md             # 데이터→학습→vLLM 서빙 절차
+.github/workflows/
+  ci.yml                      # 빌드/검증/테스트
+  update-knowledge-base.yml   # 스케줄 자동 갱신 + PR
 ```
+
+## 개발 스크립트 / CI
+
+```bash
+npm run validate:kb    # 판례 지식베이스 무결성 검증(CI 게이트)
+npm run test:rag       # RAG 검색 순위·가드레일 회귀 테스트
+npm run ingest:cases   # 신규 수집 후보(data/incoming) 스키마·PII 검증
+npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
+```
+
+- **`.github/workflows/ci.yml`** — push/PR 시 validate:kb → test:rag →
+  typecheck → build
+- **`.github/workflows/update-knowledge-base.yml`** — 매주 스케줄 실행:
+  신규 판례 수집 검증 → 무결성 검증 → 합성 데이터 재생성 → 회귀 테스트 →
+  변경 시 PR 자동 생성(사람 검토 후 머지)
+- **`training/`** — QLoRA 미세조정 설정 및 데이터→학습→vLLM 서빙 절차
 
 ## 진행 현황 / 로드맵 (연구서 기준)
 
-- ✅ **실손24 / 마이데이터 API 연계** — 면책 청구건을 정형 데이터로 불러와
-  `<user_medical_data>` 자동 주입(현재 stub, 실 API 교체 가능)
-- ✅ **벡터 RAG** — TF-IDF 코사인 유사도 검색으로 키워드 매칭 대체
-- ⏳ **외부 임베딩 벡터 DB** — 대규모 판례 코퍼스용 임베딩·ANN 인덱스로 교체
-- ⏳ **도메인 특화 미세조정** — 분쟁조정 결정문 익명화 후 합성 데이터 기반 LoRA 파인튜닝
-- ⏳ **CI 파이프라인** — 신규 하급심 판례·분쟁조정 기준 실시간 갱신
+- ✅ **실손24 / 마이데이터 API 연계** — 면책 청구건 정형 데이터 자동 주입(stub)
+- ✅ **벡터 RAG** — TF-IDF 코사인 유사도 검색
+- ✅ **외부 임베딩 벡터 DB 교체 경계** — `EmbeddingProvider` 추상화로 원격
+  임베딩 엔드포인트 전환 가능(`EMBEDDING_*` 환경변수)
+- ✅ **도메인 특화 미세조정 파이프라인** — 익명 합성 데이터 생성 + QLoRA 설정
+- ✅ **자동 갱신 CI 파이프라인** — 무결성·회귀 테스트 및 스케줄 갱신 워크플로
+- ⏳ **외부 크롤링·익명화 모듈** — 금감원/소비자원/판결문 수집·PII 스크러빙(법적·기술 검토 필요)
+- ⏳ **ANN 인덱스 / 벡터 DB 연동** — 수만 건 규모 코퍼스용 HNSW·pgvector·Qdrant
 
 ---
 
