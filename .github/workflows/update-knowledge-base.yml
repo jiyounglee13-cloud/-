@@ -27,23 +27,27 @@ jobs:
 
       - run: npm ci
 
-      # 1) 신규 수집 후보 검증 (PII 익명화·스키마 점검)
+      # 1) 신규 판례 수집 → PII 익명화 → 구조화 (로컬 fixture/원격 어댑터)
+      - name: Crawl & anonymize cases
+        run: npm run crawl:cases
+
+      # 2) 수집 후보 검증 (PII 익명화·스키마 점검)
       - name: Ingest & validate new cases
         run: npm run ingest:cases
 
-      # 2) 지식베이스 무결성 검증
+      # 3) 지식베이스 무결성 검증
       - name: Validate knowledge base
         run: npm run validate:kb
 
-      # 3) 합성 학습 데이터 재생성 (지식베이스 변경 반영)
+      # 4) 합성 학습 데이터 재생성 (지식베이스 변경 반영)
       - name: Regenerate synthetic dataset
         run: npm run gen:data
 
-      # 4) RAG 검색 회귀 테스트
+      # 5) RAG 검색 회귀 테스트
       - name: RAG regression test
         run: npm run test:rag
 
-      # 5) 변경사항이 있으면 PR 생성 (검토 후 머지)
+      # 6) 변경사항이 있으면 PR 생성 (검토 후 머지)
       - name: Open PR if changes
         uses: peter-evans/create-pull-request@v6
         with:

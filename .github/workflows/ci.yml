@@ -25,6 +25,9 @@ jobs:
       - name: RAG retrieval regression test
         run: npm run test:rag
 
+      - name: PII scrubbing test
+        run: npm run test:scrub
+
       - name: Typecheck
         run: npm run typecheck
 

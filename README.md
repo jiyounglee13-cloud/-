@@ -88,9 +88,13 @@ lib/
   embedding.ts          # 임베딩 provider(로컬 해싱 TF-IDF / 원격 어댑터)
   vectorIndex.ts        # dense 벡터 인덱스(코사인, ANN 교체 가능)
   text.ts               # 한국어 친화 토크나이저
+  scrub.ts              # PII 익명화(스크러빙) 모듈
+  crawler.ts            # 판례 수집 소스 추상화 + 구조화 추출
 scripts/
   test-rag.ts           # RAG 검색 순위·가드레일 회귀 테스트
+  test-scrub.ts         # PII 스크러빙 단위 테스트
   validate-kb.ts        # 지식베이스 무결성 검증(CI 게이트)
+  crawl-cases.ts        # 수집→익명화→구조화→data/incoming 적재
   ingest-cases.ts       # 신규 판례 수집 후보 검증(PII·스키마)
   generate-synthetic-data.ts  # LoRA 합성 학습 데이터 생성
 training/
@@ -106,6 +110,8 @@ training/
 ```bash
 npm run validate:kb    # 판례 지식베이스 무결성 검증(CI 게이트)
 npm run test:rag       # RAG 검색 순위·가드레일 회귀 테스트
+npm run test:scrub     # PII 스크러빙 단위 테스트
+npm run crawl:cases    # 수집→익명화→구조화→data/incoming 적재
 npm run ingest:cases   # 신규 수집 후보(data/incoming) 스키마·PII 검증
 npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
 ```
@@ -125,8 +131,10 @@ npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
   임베딩 엔드포인트 전환 가능(`EMBEDDING_*` 환경변수)
 - ✅ **도메인 특화 미세조정 파이프라인** — 익명 합성 데이터 생성 + QLoRA 설정
 - ✅ **자동 갱신 CI 파이프라인** — 무결성·회귀 테스트 및 스케줄 갱신 워크플로
-- ⏳ **외부 크롤링·익명화 모듈** — 금감원/소비자원/판결문 수집·PII 스크러빙(법적·기술 검토 필요)
-- ⏳ **ANN 인덱스 / 벡터 DB 연동** — 수만 건 규모 코퍼스용 HNSW·pgvector·Qdrant
+- ✅ **PII 익명화·수집 파이프라인** — 스크러버 + 소스 추상화 + 구조화 추출
+  (로컬 fixture 동작, 원격 소스는 어댑터 골격)
+- ⏳ **원격 크롤러 실연동** — 금감원/소비자원/판결문 실 수집(이용약관·저작권·법적 검토 필요)
+- ⏳ **외부 벡터 DB 실연동** — pgvector·Qdrant 등 매니지드 인덱스 연결
 
 ---
 
