@@ -28,6 +28,9 @@ jobs:
       - name: PII scrubbing test
         run: npm run test:scrub
 
+      - name: Crawler HTTP integration test (robots + mock)
+        run: npm run test:crawler
+
       - name: ANN (LSH) recall test
         run: npm run test:ann
 

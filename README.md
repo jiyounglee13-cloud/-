@@ -115,6 +115,7 @@ training/
 npm run validate:kb    # 판례 지식베이스 무결성 검증(CI 게이트)
 npm run test:rag       # RAG 검색 순위·가드레일 회귀 테스트
 npm run test:scrub     # PII 스크러빙 단위 테스트
+npm run test:crawler   # 원격 크롤러 HTTP 연동 검증(robots + 목 서버)
 npm run test:ann       # ANN(LSH) recall@k 검증
 npm run test:qdrant    # Qdrant 백엔드 REST 연동 검증(목 서버)
 npm run crawl:cases    # 수집→익명화→구조화→data/incoming 적재
@@ -143,7 +144,9 @@ npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
   recall@5 ≈ 98% 검증
 - ✅ **외부 벡터 DB 실연동(Qdrant)** — REST 어댑터(`VECTOR_BACKEND=qdrant`),
   목 서버로 프로토콜 100% 일치 검증. `QDRANT_URL` 설정 시 실 인스턴스 연결
-- ⏳ **원격 크롤러 실연동** — 금감원/소비자원/판결문 실 수집(이용약관·저작권·법적 검토 필요)
+- ✅ **원격 크롤러 HTTP 연동** — robots 준수 fetch → HTML 평문화 → 익명화 →
+  구조화(`HttpCaseSource`). 목 서버로 검증, `CRAWL_URL` 설정 시 실 URL 수집
+- ⏳ **실 출처 운영 연동** — 금감원/소비자원/판결문 실수집은 이용약관·저작권·법적 검토 후 적용
 
 ---
 

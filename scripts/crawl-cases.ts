@@ -15,6 +15,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   LocalFixtureSource,
+  HttpCaseSource,
   RemoteCaseSource,
   extractEntry,
   type CaseSource,
@@ -28,6 +29,16 @@ async function main() {
     new RemoteCaseSource("fss-dispute", process.env.FSS_ENDPOINT),
     new RemoteCaseSource("court-scourt", process.env.COURT_ENDPOINT),
   ];
+
+  // CRAWL_URL(쉼표 구분)이 설정되면 robots 준수 HTTP 수집을 추가한다.
+  // (이용약관·저작권·robots 검토를 통과한 공개 출처에만 사용할 것)
+  if (process.env.CRAWL_URL) {
+    sources.push(
+      new HttpCaseSource(process.env.CRAWL_URL.split(",").map((s) => s.trim()), {
+        delayMs: 1000,
+      }),
+    );
+  }
 
   const candidates = [];
   let totalRedactions = 0;

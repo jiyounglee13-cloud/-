@@ -16,6 +16,7 @@
     "ingest:cases": "tsx scripts/ingest-cases.ts",
     "crawl:cases": "tsx scripts/crawl-cases.ts",
     "test:scrub": "tsx scripts/test-scrub.ts",
+    "test:crawler": "tsx scripts/test-crawler-http.ts",
     "gen:data": "tsx scripts/generate-synthetic-data.ts"
   },
   "dependencies": {

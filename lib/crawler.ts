@@ -135,6 +135,84 @@ export class LocalFixtureSource implements CaseSource {
   }
 }
 
+/** HTML → 평문 텍스트 변환 (태그 제거, 블록 요소는 줄바꿈) */
+export function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<\/(p|div|br|h[1-6]|li|tr|article|section)>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n[ \t]*\n+/g, "\n")
+    .trim();
+}
+
+/** robots.txt 의 User-agent:* 규칙으로 해당 경로 수집 허용 여부 판정 */
+export async function isAllowedByRobots(url: string): Promise<boolean> {
+  try {
+    const u = new URL(url);
+    const res = await fetch(`${u.origin}/robots.txt`);
+    if (!res.ok) return true; // robots.txt 없음 → 허용
+    const lines = (await res.text()).split(/\r?\n/).map((l) => l.trim());
+    let applies = false;
+    const disallows: string[] = [];
+    for (const line of lines) {
+      if (/^user-agent:/i.test(line)) {
+        applies = line.split(":")[1].trim() === "*";
+      } else if (applies && /^disallow:/i.test(line)) {
+        const p = line.split(":").slice(1).join(":").trim();
+        if (p) disallows.push(p);
+      } else if (line === "") {
+        applies = false;
+      }
+    }
+    return !disallows.some((d) => u.pathname.startsWith(d));
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * HTTP(S) 원격 소스 — robots.txt를 준수하여 공개 페이지를 수집한다.
+ *
+ * 안전 수칙: 수집 대상은 이용약관·저작권·robots 검토를 통과한 공개 출처여야
+ * 하며, 요청 간 지연(politeness delay)과 식별 가능한 User-Agent를 사용한다.
+ * 본 구현은 그 메커니즘(robots 확인 → fetch → HTML 평문화)을 제공한다.
+ */
+export class HttpCaseSource implements CaseSource {
+  readonly id = "http";
+  constructor(
+    private urls: string[],
+    private opts?: { userAgent?: string; delayMs?: number },
+  ) {}
+
+  async fetchRaw(): Promise<RawDoc[]> {
+    const out: RawDoc[] = [];
+    const ua = this.opts?.userAgent ?? "silson-fhi-crawler/0.1 (+research)";
+    for (const url of this.urls) {
+      if (!(await isAllowedByRobots(url))) {
+        console.warn(`[http] robots.txt 금지 — 건너뜀: ${url}`);
+        continue;
+      }
+      const res = await fetch(url, { headers: { "User-Agent": ua } });
+      if (!res.ok) {
+        console.warn(`[http] HTTP ${res.status} — 건너뜀: ${url}`);
+        continue;
+      }
+      const text = htmlToText(await res.text());
+      const title = (text.split("\n")[0] || url).slice(0, 80);
+      out.push({ sourceId: this.id, docId: url, title, url, text });
+      if (this.opts?.delayMs) await new Promise((r) => setTimeout(r, this.opts!.delayMs));
+    }
+    return out;
+  }
+}
+
 /**
  * 원격 소스 어댑터 골격 (네트워크·법적 검토 필요).
  * 실제 구현 시 robots/이용약관 준수, 요청 제한, 인증을 추가해야 한다.
