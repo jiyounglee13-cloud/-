@@ -31,6 +31,9 @@ jobs:
       - name: ANN (LSH) recall test
         run: npm run test:ann
 
+      - name: Qdrant backend integration test (mock REST)
+        run: npm run test:qdrant
+
       - name: Typecheck
         run: npm run typecheck
 

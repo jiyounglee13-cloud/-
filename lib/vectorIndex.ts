@@ -39,14 +39,14 @@ export class DenseVectorIndex<T> {
     await this.provider.fit(corpus);
     const vectors: DenseVector[] = await this.provider.embedBatch(corpus);
     this.payloads = docs.map((d) => d.payload);
-    this.backend.build(vectors);
+    await this.backend.build(vectors);
   }
 
   async search(query: string, topK = 4, minScore = 0.01): Promise<SearchHit<T>[]> {
     if (!query.trim() || this.payloads.length === 0) return [];
     const qv = await this.provider.embedQuery(query);
-    return this.backend
-      .query(qv, topK)
+    const results = await this.backend.query(qv, topK);
+    return results
       .filter((r) => r.score >= minScore)
       .map((r) => ({ payload: this.payloads[r.index], score: r.score }));
   }

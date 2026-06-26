@@ -19,8 +19,9 @@ export interface QueryResult {
 
 export interface VectorBackend {
   readonly id: string;
-  build(vectors: DenseVector[]): void;
-  query(vec: DenseVector, topK: number): QueryResult[];
+  // 외부 벡터 DB(HTTP) 백엔드를 위해 비동기 반환을 허용한다.
+  build(vectors: DenseVector[]): void | Promise<void>;
+  query(vec: DenseVector, topK: number): QueryResult[] | Promise<QueryResult[]>;
 }
 
 function dot(a: DenseVector, b: DenseVector): number {
@@ -169,9 +170,25 @@ export class LshBackend implements VectorBackend {
 
 // ── 백엔드 선택 ────────────────────────────────────────────────────
 
-/** 환경변수 VECTOR_BACKEND(=lsh|bruteforce)에 따라 백엔드를 생성한다. */
+/** 환경변수 VECTOR_BACKEND(=qdrant|lsh|bruteforce)에 따라 백엔드를 생성한다. */
 export function getVectorBackend(): VectorBackend {
   const kind = (process.env.VECTOR_BACKEND || "bruteforce").toLowerCase();
+  if (kind === "qdrant") {
+    const url = process.env.QDRANT_URL;
+    if (!url) {
+      console.warn(
+        "[vector] VECTOR_BACKEND=qdrant 이나 QDRANT_URL 미설정 — bruteforce로 폴백",
+      );
+      return new BruteForceBackend();
+    }
+    // 동적 import로 기본 번들에 외부 백엔드를 포함하지 않는다.
+    const { QdrantVectorBackend } = require("./backends/qdrant") as typeof import("./backends/qdrant");
+    return new QdrantVectorBackend({
+      url,
+      apiKey: process.env.QDRANT_API_KEY,
+      collection: process.env.QDRANT_COLLECTION,
+    });
+  }
   if (kind === "lsh") {
     return new LshBackend({
       numTables: Number(process.env.LSH_TABLES || 4),

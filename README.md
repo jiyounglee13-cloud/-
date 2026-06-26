@@ -87,7 +87,8 @@ lib/
   mydata.ts             # 실손24/마이데이터 연동(stub) + 입력 매핑
   embedding.ts          # 임베딩 provider(로컬 해싱 TF-IDF / 원격 어댑터)
   vectorIndex.ts        # dense 벡터 인덱스(provider + 백엔드 위임)
-  vectorBackend.ts      # 검색 백엔드(BruteForce / LSH-ANN, 외부 DB 교체 가능)
+  vectorBackend.ts      # 검색 백엔드(BruteForce / LSH-ANN / Qdrant)
+  backends/qdrant.ts    # Qdrant 벡터 DB REST 실연동 어댑터
   text.ts               # 한국어 친화 토크나이저
   scrub.ts              # PII 익명화(스크러빙) 모듈
   crawler.ts            # 판례 수집 소스 추상화 + 구조화 추출
@@ -113,6 +114,7 @@ npm run validate:kb    # 판례 지식베이스 무결성 검증(CI 게이트)
 npm run test:rag       # RAG 검색 순위·가드레일 회귀 테스트
 npm run test:scrub     # PII 스크러빙 단위 테스트
 npm run test:ann       # ANN(LSH) recall@k 검증
+npm run test:qdrant    # Qdrant 백엔드 REST 연동 검증(목 서버)
 npm run crawl:cases    # 수집→익명화→구조화→data/incoming 적재
 npm run ingest:cases   # 신규 수집 후보(data/incoming) 스키마·PII 검증
 npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
@@ -136,9 +138,10 @@ npm run gen:data       # LoRA 합성 학습 데이터 생성(data/synthetic)
 - ✅ **PII 익명화·수집 파이프라인** — 스크러버 + 소스 추상화 + 구조화 추출
   (로컬 fixture 동작, 원격 소스는 어댑터 골격)
 - ✅ **ANN 인덱스** — 랜덤 초평면 LSH 기반 근사 최근접(`VECTOR_BACKEND=lsh`),
-  recall@5 ≈ 98% 검증. 외부 벡터 DB도 동일 백엔드 인터페이스로 교체 가능
+  recall@5 ≈ 98% 검증
+- ✅ **외부 벡터 DB 실연동(Qdrant)** — REST 어댑터(`VECTOR_BACKEND=qdrant`),
+  목 서버로 프로토콜 100% 일치 검증. `QDRANT_URL` 설정 시 실 인스턴스 연결
 - ⏳ **원격 크롤러 실연동** — 금감원/소비자원/판결문 실 수집(이용약관·저작권·법적 검토 필요)
-- ⏳ **외부 벡터 DB 실연동** — pgvector·Qdrant 등 매니지드 인덱스 연결
 
 ---
 
