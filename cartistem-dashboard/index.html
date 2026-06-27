@@ -10,7 +10,7 @@
 <body data-fontscale="2">
   <!-- ===== 상단 툴바 ===== -->
   <header class="toolbar" id="toolbar">
-    <button class="hamburger" id="hamburger" type="button" aria-label="목록 열기">☰</button>
+    <button class="hamburger" data-action="menu" type="button" aria-label="목록 열기">☰</button>
     <a class="tb-brand" href="#/home">
       <span class="tb-mark">CARTISTEM</span>
       <span class="tb-sub">논문 대시보드</span>
@@ -18,13 +18,13 @@
     <div class="tb-spacer"></div>
     <div class="tb-group" role="group" aria-label="글자 크기">
       <span class="tb-label">글자</span>
-      <button class="tb-btn" id="fontDown" type="button" aria-label="글자 작게">A−</button>
-      <button class="tb-btn" id="fontReset" type="button" aria-label="기본 크기">A</button>
-      <button class="tb-btn" id="fontUp" type="button" aria-label="글자 크게">A＋</button>
+      <button class="tb-btn" data-action="font-down" type="button" aria-label="글자 작게">A−</button>
+      <button class="tb-btn" data-action="font-reset" type="button" aria-label="기본 크기">A</button>
+      <button class="tb-btn" data-action="font-up" type="button" aria-label="글자 크게">A＋</button>
     </div>
-    <button class="tb-btn tb-nav" id="backBtn" type="button" title="뒤로">← 뒤로</button>
-    <button class="tb-btn" id="expandAllBtn" type="button">▾ 모두 펼치기</button>
-    <button class="tb-btn tb-accent" id="printBtn" type="button">🖨 전체 인쇄</button>
+    <button class="tb-btn tb-nav" data-action="back" type="button" title="뒤로">← 뒤로</button>
+    <button class="tb-btn" id="expandAllBtn" data-action="expand" type="button">▾ 모두 펼치기</button>
+    <button class="tb-btn tb-accent" data-action="print" type="button">🖨 전체 인쇄</button>
   </header>
 
   <div class="layout">
@@ -59,14 +59,13 @@
             <input type="search" id="searchInput" placeholder="제목·저자·저널·결과 키워드 검색…" />
           </div>
           <div class="filter-row" id="categoryFilters"></div>
-          <div class="filter-row" id="evidenceFilters"></div>
           <div class="sort-row">
             <label for="sortSelect">정렬</label>
             <select id="sortSelect">
               <option value="num">논문 번호순</option>
               <option value="yearDesc">최신 연도순</option>
               <option value="yearAsc">오래된 연도순</option>
-              <option value="evidence">근거 수준순</option>
+              <option value="type">연구 유형순</option>
             </select>
             <span class="result-count" id="resultCount"></span>
           </div>
@@ -93,7 +92,7 @@
   </div>
 
   <!-- 위로 가기 -->
-  <button class="to-top" id="toTop" type="button" aria-label="맨 위로" hidden>↑</button>
+  <button class="to-top" id="toTop" data-action="top" type="button" aria-label="맨 위로" hidden>↑</button>
 
   <footer class="site-footer">
     <div class="footer-inner">

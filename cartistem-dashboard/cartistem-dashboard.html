@@ -202,6 +202,7 @@ body {
 .tag-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
 .tag { font-size: .71rem; font-weight: 700; padding: .22rem .6rem; border-radius: 999px; white-space: nowrap; }
 .tag-design { background: var(--accent-soft); color: var(--accent); }
+.tag-year { background: #eef2f6; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .tag-featured { background: var(--gold-soft); color: var(--gold); }
 .tag-evid { color: #fff; }
 .evid-top { background: var(--evid-top); } .evid-high { background: var(--evid-high); }
@@ -271,7 +272,8 @@ table.t .col-var { font-weight: 600; color: var(--ink); width: 26%; }
 .src-table-wrap { overflow-x: auto; }
 .src-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .src-table th, .src-table td { border-bottom: 1px solid var(--line); padding: .65rem .7rem; text-align: left; vertical-align: top; }
-.src-table thead th { background: #eef3f8; color: var(--ink-soft); font-weight: 700; font-size: .78rem; position: sticky; top: var(--tb-h); }
+.src-table thead th { background: #eef3f8; color: var(--ink-soft); font-weight: 700; font-size: .78rem; }
+.src-table .s-goto { white-space: nowrap; }
 .src-table .s-num { font-weight: 800; color: var(--primary-dark); white-space: nowrap; }
 .src-table .s-title { font-weight: 600; color: var(--ink); max-width: 34rem; }
 .src-table .s-jour { color: var(--ink-faint); font-size: .8rem; }
@@ -333,7 +335,7 @@ body.print-one .panel, body.print-one .stats-grid, body.print-one .synthesis-pan
 <body data-fontscale="2">
   <!-- ===== 상단 툴바 ===== -->
   <header class="toolbar" id="toolbar">
-    <button class="hamburger" id="hamburger" type="button" aria-label="목록 열기">☰</button>
+    <button class="hamburger" data-action="menu" type="button" aria-label="목록 열기">☰</button>
     <a class="tb-brand" href="#/home">
       <span class="tb-mark">CARTISTEM</span>
       <span class="tb-sub">논문 대시보드</span>
@@ -341,13 +343,13 @@ body.print-one .panel, body.print-one .stats-grid, body.print-one .synthesis-pan
     <div class="tb-spacer"></div>
     <div class="tb-group" role="group" aria-label="글자 크기">
       <span class="tb-label">글자</span>
-      <button class="tb-btn" id="fontDown" type="button" aria-label="글자 작게">A−</button>
-      <button class="tb-btn" id="fontReset" type="button" aria-label="기본 크기">A</button>
-      <button class="tb-btn" id="fontUp" type="button" aria-label="글자 크게">A＋</button>
+      <button class="tb-btn" data-action="font-down" type="button" aria-label="글자 작게">A−</button>
+      <button class="tb-btn" data-action="font-reset" type="button" aria-label="기본 크기">A</button>
+      <button class="tb-btn" data-action="font-up" type="button" aria-label="글자 크게">A＋</button>
     </div>
-    <button class="tb-btn tb-nav" id="backBtn" type="button" title="뒤로">← 뒤로</button>
-    <button class="tb-btn" id="expandAllBtn" type="button">▾ 모두 펼치기</button>
-    <button class="tb-btn tb-accent" id="printBtn" type="button">🖨 전체 인쇄</button>
+    <button class="tb-btn tb-nav" data-action="back" type="button" title="뒤로">← 뒤로</button>
+    <button class="tb-btn" id="expandAllBtn" data-action="expand" type="button">▾ 모두 펼치기</button>
+    <button class="tb-btn tb-accent" data-action="print" type="button">🖨 전체 인쇄</button>
   </header>
 
   <div class="layout">
@@ -382,14 +384,13 @@ body.print-one .panel, body.print-one .stats-grid, body.print-one .synthesis-pan
             <input type="search" id="searchInput" placeholder="제목·저자·저널·결과 키워드 검색…" />
           </div>
           <div class="filter-row" id="categoryFilters"></div>
-          <div class="filter-row" id="evidenceFilters"></div>
           <div class="sort-row">
             <label for="sortSelect">정렬</label>
             <select id="sortSelect">
               <option value="num">논문 번호순</option>
               <option value="yearDesc">최신 연도순</option>
               <option value="yearAsc">오래된 연도순</option>
-              <option value="evidence">근거 수준순</option>
+              <option value="type">연구 유형순</option>
             </select>
             <span class="result-count" id="resultCount"></span>
           </div>
@@ -416,7 +417,7 @@ body.print-one .panel, body.print-one .stats-grid, body.print-one .synthesis-pan
   </div>
 
   <!-- 위로 가기 -->
-  <button class="to-top" id="toTop" type="button" aria-label="맨 위로" hidden>↑</button>
+  <button class="to-top" id="toTop" data-action="top" type="button" aria-label="맨 위로" hidden>↑</button>
 
   <footer class="site-footer">
     <div class="footer-inner">
@@ -452,7 +453,7 @@ window.CARTISTEM_META = {
     "골수흡인농축물(BMAC)과 직접 비교한 연구들(Cell Transplantation 2020, Arthroscopy 2021, KSSTA 2022, 메타분석 2023)에서 임상결과는 유사했으나, 2차 관절경상 연골 재생은 hUCB-MSC가 더 우수한 경향이 반복 관찰되었다.",
     "미세천공(microdrilling)과 비교한 전향 연구(Scientific Reports 2024, KSSTA 2024)에서 hUCB-MSC는 유리연골형(2형 콜라겐) 재생 비율이 더 높았다.",
     "비용효과 분석(2023)은 미세골절 대비 ICER US$16,812/QALY(보건의료 관점)로 비용효과적이라고 보고했다.",
-    "다수 연구가 후향적·소표본·대조군 부재의 한계를 공유하며, 저자들은 대규모 무작위 대조시험과 장기 추적의 필요성을 일관되게 제언한다."
+    "다수 연구가 후향적 설계, 적은 표본 수, 대조군 부재라는 공통된 한계를 지니며, 저자들은 대규모 무작위 대조시험과 장기 추적의 필요성을 일관되게 제언한다."
   ]
 };
 
@@ -463,13 +464,13 @@ window.PAPERS = [
     title: "Allogeneic Umbilical Cord Blood–Derived Mesenchymal Stem Cell Implantation Versus Microfracture for Large, Full-Thickness Cartilage Defects in Older Patients: A Multicenter Randomized Clinical Trial and Extended 5-Year Clinical Follow-up",
     authors: "Lim HC, Park YB, Ha CW, Cole BJ, et al. (Cartistem Research Group)",
     journal: "The American Journal of Sports Medicine", year: 2021,
-    design: "다기관 무작위 대조 3상 시험 + 5년 관찰 연장 추적", evidenceLabel: "근거수준 1 (RCT)",
+    design: "다기관 무작위 대조 3상 시험 + 5년 관찰 연장 추적", evidenceLabel: "무작위 대조시험 (Level I)",
     pmid: "—", reg: "NCT01041001 · NCT01626677", impact: "—",
     tableB: {
       question: "큰 전층 연골 결손이 있는 고령 환자에서 hUCB-MSC-4%HA 이식이 신뢰성 있는 연골 회복을 유도하고 임상 개선이 5년까지 유지되는가",
       population: "단일 구획 무릎 ICRS grade 4 큰 전층 연골 결손(관절경 확인). 무작위 배정 114명(평균 55.9세, 여성 67%, BMI 26.2 kg/m²); 3상 완료 89명, 5년 추적 73명. 10개 3차 병원",
       intervention: "UCB-MSC-HA 이식(미니 관절절개) vs 미세골절(microfracture)",
-      outcomes: "1차: 48주 관절경상 ICRS 거시적 연골회복평가(맹검) 1등급 이상 개선 비율. 2차: 조직학적 평가, VAS·WOMAC·IKDC 변화, 이상반응",
+      outcomes: "1차: 48주 관절경상 ICRS 육안적 연골 회복 평가(맹검) 1등급 이상 개선 비율. 2차: 조직학적 평가, VAS·WOMAC·IKDC 변화, 이상반응",
       followup: "48주 RCT 후 5년 관찰 연장"
     },
     tableC: [
@@ -483,11 +484,11 @@ window.PAPERS = [
     tableD: [
       { m: "큰 전층 연골 결손 고령 환자에서 hUCB-MSC-HA는 미세골절보다 48주 관절경·조직학적 연골 회복이 우월하다", b: "표 C: 48주 1등급 개선 97.7% vs 71.7%(P=.001), 조직학 P=.036" },
       { m: "임상적 통증·기능 개선은 단기(48주)엔 군간 동등하나 3~5년 장기에서 줄기세포군이 유의하게 양호하다", b: "표 C: 3~5년 임상지표 P<.05" },
-      { m: "근거수준 1의 다기관 무작위 대조시험으로 비교적 높은 신뢰도를 제공한다", b: "표 B: RCT, 10개 병원, 114명 무작위 배정" }
+      { m: "다기관 무작위 대조시험(Level I)으로 비교적 높은 신뢰도를 제공한다", b: "표 B: RCT, 10개 병원, 114명 무작위 배정" }
     ],
     tableE: [
       { l: "개방표지(open-label) 설계 — UCB-MSC군은 관절절개, 미세골절군은 관절경으로 이중맹검 불가", i: "수행·평가 편향 가능(단, 1차 평가는 맹검)", f: "위약/개방 미세골절 대조 등 더 엄격한 대조 설계 논의(규제·연구진 합의로 비채택)" },
-      { l: "고령·큰 결손 집단 대상", i: "젊은 환자·소결손으로 일반화 제약", f: "다양한 환자군에서 추가 검증" }
+      { l: "고령·큰 결손 집단 대상", i: "젊은 환자·작은 결손으로 일반화 제약", f: "다양한 환자군에서 추가 검증" }
     ]
   },
 
@@ -497,7 +498,7 @@ window.PAPERS = [
     title: "Cartilage Regeneration in Osteoarthritic Patients by a Composite of Allogeneic Umbilical Cord Blood-Derived Mesenchymal Stem Cells and Hyaluronate Hydrogel: Results From a Clinical Trial for Safety and Proof-of-Concept With 7 Years of Extended Follow-Up",
     authors: "Park YB, Ha CW, Lee CH, Yoon YC, Park YG",
     journal: "Stem Cells Translational Medicine", year: 2016,
-    design: "최초 인체적용 1/2상 임상시험(안전성·개념증명), 단일군, 7년 연장 추적", evidenceLabel: "근거수준 하위 (단일군 임상시험)",
+    design: "최초 인체적용 1·2상 임상시험(안전성·개념증명), 단일군, 7년 연장 추적", evidenceLabel: "1·2상 임상시험 (단일군)",
     pmid: "28191757", reg: "원문 미보고", impact: "IF 5.962",
     tableB: {
       question: "동종 hUCB-MSC + HA 하이드로젤(CARTISTEM)의 골관절염 연골 결손 재생에 대한 안전성과 효능",
@@ -516,10 +517,10 @@ window.PAPERS = [
     tableD: [
       { m: "동종 hUCB-MSC-HA의 최초 인체적용에서 7년간 골형성·종양화 없이 안전성이 확인되었다", b: "표 C: 경도~중등도 이상반응 5건, 골형성/종양화 0건(7년)" },
       { m: "12주에 재생조직, 1년 조직학에서 유리연골 유사 연골, 3년 MRI에서 지속이 관찰되어 내구성 있는 재생을 시사한다", b: "표 C: 12주 관절경·1년 조직·3년 MRI 소견" },
-      { m: "표본 7명·단일군의 초기 임상시험으로 효능은 개념증명 수준이다", b: "표 E: 소표본·대조군 부재" }
+      { m: "표본 수 7명의 단일군 초기 임상시험으로 효능은 개념증명 수준이다", b: "표 E: 적은 표본 수와 대조군 부재" }
     ],
     tableE: [
-      { l: "소수 환자(n=7) 참여 — 1/2상 최초 인체적용의 본질적 한계", i: "효능 추론 제한, 통계적 검정력 낮음", f: "더 많은 환자 수로 추가 연구 필요(저자 명시)" },
+      { l: "소수 환자(n=7) 참여 — 1·2상 최초 인체적용의 본질적 한계", i: "효능 추론 제한, 통계적 검정력 낮음", f: "더 많은 환자 수로 추가 연구 필요(저자 명시)" },
       { l: "단일군·대조군 부재", i: "비교 효능 평가 불가", f: "대조군 포함 시험 필요" }
     ]
   },
@@ -530,7 +531,7 @@ window.PAPERS = [
     title: "Restoration of a large osteochondral defect of the knee using a composite of umbilical cord blood-derived mesenchymal stem cells and hyaluronic acid hydrogel: a case report with a 5-year follow-up",
     authors: "Park YB, Ha CW, Lee CH, Park YG",
     journal: "BMC Musculoskeletal Disorders", year: 2017,
-    design: "증례 보고(1례), 5년 추적", evidenceLabel: "근거수준 하위 (증례 보고)",
+    design: "증례 보고(1례), 5년 추적", evidenceLabel: "증례 보고",
     pmid: "28148266", reg: "—", impact: "IF 2.002",
     tableB: {
       question: "큰 골연골 결손(연골+연골하골)에 동종 UCB-MSC + 4% HA 하이드로젤이 안전·효과적 치료 옵션이 될 수 있는가",
@@ -560,7 +561,7 @@ window.PAPERS = [
     title: "Cartilage regeneration in osteoarthritic knees treated with distal femoral osteotomy and intra-lesional implantation of allogenic human umbilical cord blood-derived mesenchymal stem cells: A report of two cases",
     authors: "Song JS, Hong KT, Kim NM, Jung JY, Park HS, Chun YS, Kim SJ",
     journal: "The Knee", year: 2019,
-    design: "증례 보고(2례)", evidenceLabel: "근거수준 하위 (증례 보고)",
+    design: "증례 보고(2례)", evidenceLabel: "증례 보고",
     pmid: "31443940", reg: "—", impact: "IF 1.762",
     tableB: {
       question: "외반변형에 의한 외측 구획 골관절염에서 원위대퇴골절골술(DFO) + hUCB-MSC 이식의 결과",
@@ -590,7 +591,7 @@ window.PAPERS = [
     title: "High tibial osteotomy with human umbilical cord blood-derived mesenchymal stem cells implantation for knee cartilage regeneration",
     authors: "Song JS, Hong KT, Kong CG, Kim NM, Jung JY, Park HS, Kim YJ, Chang KB, Kim SJ",
     journal: "World Journal of Stem Cells", year: 2020,
-    design: "후향적 연구(증례 시리즈), 대조군 없음", evidenceLabel: "근거수준 하위 (후향, LoE 4)",
+    design: "후향적 연구(증례 시리즈), 대조군 없음", evidenceLabel: "후향적 증례 시리즈 (Level IV)",
     pmid: "32742568", reg: "—", impact: "IF 3.534",
     tableB: {
       question: "내측 구획 골관절염 + 내반변형 환자에서 HTO + hUCB-MSC 이식이 연골 재생에 효과적인가",
@@ -607,7 +608,7 @@ window.PAPERS = [
     tableD: [
       { m: "HTO + hUCB-MSC는 내반변형 동반 내측 구획 골관절염의 효과적 치료로, 연골 재생이 임상 개선과 연결된다", b: "표 C: 2차 관절경 87.6%가 ICRS I·II, grade IV 0명" },
       { m: "연골 재생이 양호할수록(ICRS I) 임상 결과가 더 좋다", b: "표 C: ICRS I군의 우월한 개선" },
-      { m: "후향적·대조군 부재로 비교 효능은 입증되지 않는다", b: "표 E: 후향, 대조군 없음" }
+      { m: "후향적 연구이며 대조군이 없어 비교 효능은 입증되지 않는다", b: "표 E: 후향, 대조군 없음" }
     ],
     tableE: [
       { l: "후향적이며 대조군 미포함", i: "비교 효능 입증 제한", f: "단, 125명 전원 2차 관절경으로 재생 확인. 향후 연골재생술 필요성 시사" }
@@ -620,7 +621,7 @@ window.PAPERS = [
     title: "Implantation of allogenic umbilical cord blood-derived mesenchymal stem cells improves knee osteoarthritis outcomes: Two-year follow-up",
     authors: "Song JS, Hong KT, Kim NM, Jung JY, Park HS, Lee SH, Cho YJ, Kim SJ",
     journal: "Regenerative Therapy", year: 2020,
-    design: "증례 시리즈(후향), 대조군 없음", evidenceLabel: "근거수준 하위 (LoE 4)",
+    design: "증례 시리즈(후향), 대조군 없음", evidenceLabel: "후향적 증례 시리즈 (Level IV)",
     pmid: "31988992", reg: "—", impact: "IF 1.420",
     tableB: {
       question: "골관절염 환자에서 hUCB-MSC 이식 후 임상결과는 어떠하며 병변 특성에 따라 차이가 있는가",
@@ -650,12 +651,12 @@ window.PAPERS = [
     title: "Human umbilical cord blood-derived mesenchymal stem cell implantation for osteoarthritis of the knee",
     authors: "Song JS, Hong KT, Kim NM, Park HS, Choi NH",
     journal: "Archives of Orthopaedic and Trauma Surgery", year: 2020,
-    design: "증례 시리즈(후향)", evidenceLabel: "근거수준 하위 (LoE 4)",
+    design: "증례 시리즈(후향)", evidenceLabel: "후향적 증례 시리즈 (Level IV)",
     pmid: "31980879", reg: "—", impact: "IF 1.97",
     tableB: {
       question: "60세 이상 내측 구획(MC) 골관절염에서 hUCB-MSC 이식 후 임상결과",
-      population: "60세 초과, MC kissing 병변, MFC 전층 결손 ≥4 cm², 내반변형 ≥3°. 25명(평균 64.9±4.4세, 평균 MFC 결손 7.2±1.9 cm²)",
-      intervention: "Na-hyaluronate + hUCB-MSC 혼합 이식 + 전 예 HTO",
+      population: "60세 초과, MC 맞닿은(kissing) 병변, MFC 전층 결손 ≥4 cm², 내반변형 ≥3°. 25명(평균 64.9±4.4세, 평균 MFC 결손 7.2±1.9 cm²)",
+      intervention: "Na-hyaluronate + hUCB-MSC 혼합 이식 + 모든 증례 HTO",
       outcomes: "IKDC·VAS·WOMAC(수술 전·1년·2년), 2차 관절경 ICRS-CRA(14명, 56%)",
       followup: "2년"
     },
@@ -680,7 +681,7 @@ window.PAPERS = [
     title: "Allogenic umbilical cord blood-derived mesenchymal stem cells implantation for the treatment of juvenile osteochondritis dissecans of the knee",
     authors: "Song JS, Hong KT, Kim NM, Jung JY, Park HS, Kim YC, Shetty AA, Kim SJ",
     journal: "Journal of Clinical Orthopaedics and Trauma", year: 2019,
-    design: "증례 시리즈(2례)", evidenceLabel: "근거수준 하위 (증례 시리즈)",
+    design: "증례 시리즈(2례)", evidenceLabel: "증례 시리즈",
     pmid: "31700204", reg: "—", impact: "IF 0.81",
     tableB: {
       question: "소아 박리성 골연골염(juvenile OCD)의 골연골 결손에 hUCB-MSC 이식 결과",
@@ -710,7 +711,7 @@ window.PAPERS = [
     title: "Allogeneic umbilical cord blood-derived mesenchymal stem cells combined with high tibial osteotomy: a retrospective study on safety and early results",
     authors: "Chung YW, Yang HY, Kang SJ, Song EK, Seon JK",
     journal: "International Orthopaedics (SICOT)", year: 2021,
-    design: "후향적 연구(전향적 추적), 대조군 없음", evidenceLabel: "근거수준 중간 (후향 코호트)",
+    design: "후향적 연구(전향적 추적), 대조군 없음", evidenceLabel: "후향적 코호트 연구",
     pmid: "33068146", reg: "—", impact: "IF 2.854 · (#9=#12 동일 논문)",
     tableB: {
       question: "내측 무릎 골관절염으로 HTO를 받은 환자에서 hUCB-MSC 이식 후 단기 결과와 연골 재생",
@@ -724,16 +725,16 @@ window.PAPERS = [
       { v: "WOMAC(중앙값)", r: "44.5 → 11.0", c: "—", e: "—", s: "p<0.05" },
       { v: "KSS 통증 / 기능", r: "29.8→43.2 / 61.0→81.2", c: "—", e: "—", s: "p<0.05" },
       { v: "HSS", r: "61.6 → 82.7", c: "—", e: "—", s: "p<0.05" },
-      { v: "2차 관절경 ICRS-CRA(49명)", r: "grade I 8.2%, II 69.3%, III 22.5%", c: "수술 전 전 예 grade IV", e: "—", s: "p<0.05" },
+      { v: "2차 관절경 ICRS-CRA(49명)", r: "grade I 8.2%, II 69.3%, III 22.5%", c: "수술 전 모든 증례에서 grade IV", e: "—", s: "p<0.05" },
       { v: "Koshino 단계", r: "B 24.5%, C 75.5%", c: "—", e: "—", s: "p<0.05" }
     ],
     tableD: [
       { m: "HTO + hUCB-MSC 이식은 내측 무릎 골관절염에서 안전하며 연골 상태 개선의 신호를 보인다", b: "표 C: IKDC·WOMAC·KSS·HSS 유의 개선(p<0.05)" },
-      { m: "2차 관절경에서 전 예 ICRS IV였던 연골이 등급 호전을 보였다", b: "표 C: ICRS-CRA I~III로 호전" },
+      { m: "2차 관절경에서, 수술 전 모든 증례에서 ICRS IV였던 연골이 등급 호전을 보였다", b: "표 C: ICRS-CRA I~III로 호전" },
       { m: "대조군 부재로 실제 효과·적응증은 RCT로 규명 필요하다", b: "표 E: 대조군 없음, 추적 짧음" }
     ],
     tableE: [
-      { l: "후향적·HTO 단독 대조군 부재", i: "연골 재생 우월성 입증 제한", f: "대조군 포함 무작위 대조시험 필요(저자 명시)" },
+      { l: "후향적 연구로, HTO 단독군과 비교한 대조가 없음", i: "연골 재생 우월성 입증 제한", f: "대조군 포함 무작위 대조시험 필요(저자 명시)" },
       { l: "추적 기간이 비교적 짧고 데이터 포인트 부족", i: "장기 결론 도출 제한", f: "장기 추적 연구 필요" }
     ]
   },
@@ -744,7 +745,7 @@ window.PAPERS = [
     title: "Comparison of Bone Marrow Aspirate Concentrate and Allogenic Human Umbilical Cord Blood Derived Mesenchymal Stem Cell Implantation on Chondral Defect of Knee: Assessment of Clinical and MRI Outcomes at 2-Year Follow-Up",
     authors: "Ryu DJ, Jeon YS, Park JS, Bae GC, Kim JS, Kim MK",
     journal: "Cell Transplantation", year: 2020,
-    design: "후향적 비교 연구", evidenceLabel: "근거수준 중간 (후향 비교)",
+    design: "후향적 비교 연구", evidenceLabel: "후향적 비교 연구",
     pmid: "32713192", reg: "—", impact: "IF 3.341",
     tableB: {
       question: "무릎 골관절염 연골 결손에서 BMAC와 hUCB-MSC 이식의 임상·MRI 결과 비교",
@@ -761,10 +762,10 @@ window.PAPERS = [
     tableD: [
       { m: "BMAC와 hUCB-MSC 모두 2년 시점 임상·MRI 결과가 만족스러웠다", b: "표 C: 양군 VAS·IKDC·KOOS 유의 개선(P<0.05)" },
       { m: "두 세포원 간 임상·영상 결과에 유의한 차이는 없었다", b: "표 C: M-MOCART P=0.261/0.351, ICRS P=0.655" },
-      { m: "소표본·후향 설계로 장기·대규모 검증이 필요하다", b: "표 E: 소표본, 후향" }
+      { m: "적은 표본 수와 후향적 설계로 장기·대규모 검증이 필요하다", b: "표 E: 적은 표본 수, 후향" }
     ],
     tableE: [
-      { l: "소표본·후향, 장기 추적 부재", i: "결과의 일반화·장기 효과 입증 제한", f: "대규모·잘 통제된 전향 설계·장기 추적 필요" }
+      { l: "적은 표본 수, 후향적 설계, 장기 추적 부재", i: "결과의 일반화·장기 효과 입증 제한", f: "대규모·잘 통제된 전향 설계·장기 추적 필요" }
     ]
   },
 
@@ -774,11 +775,11 @@ window.PAPERS = [
     title: "Allogenic Human Umbilical Cord Blood-Derived Mesenchymal Stem Cells Is More Effective Than Bone Marrow Aspiration Concentrate for Cartilage Regeneration After High Tibial Osteotomy in Medial Unicompartmental Osteoarthritis of Knee",
     authors: "Lee NH, Na SM, Ahn HW, Kang JK, Seon JK, Song EK",
     journal: "Arthroscopy", year: 2021,
-    design: "후향적 비교 연구", evidenceLabel: "근거수준 중간 (후향 비교)",
+    design: "후향적 비교 연구", evidenceLabel: "후향적 비교 연구",
     pmid: "33621649", reg: "—", impact: "IF 4.325",
     tableB: {
       question: "내측 단일구획 골관절염 HTO+MFX에서 BMAC 보강과 hUCB-MSC 이식의 연골 재생 결과 비교",
-      population: "HTO+MFX + BMAC/hUCB-MSC 150예 중 kissing 병변·2차 관절경 충족: BMAC 42예, hUCB-MSC 32예. 평균 추적 18.7±4.6개월",
+      population: "HTO+MFX + BMAC/hUCB-MSC 150예 중 맞닿은(kissing) 병변·2차 관절경 충족: BMAC 42예, hUCB-MSC 32예. 평균 추적 18.7±4.6개월",
       intervention: "HTO + 미세골절 + BMAC 보강 vs hUCB-MSC 이식",
       outcomes: "HSS·KSS 통증/기능·WOMAC, 2차 관절경 ICRS 등급, 방사선(HKA·후방경사·교정각)",
       followup: "최소 1년(평균 18.7개월)"
@@ -792,7 +793,7 @@ window.PAPERS = [
     tableD: [
       { m: "임상결과는 BMAC와 hUCB-MSC가 동등하나, 연골 재생은 hUCB-MSC가 더 우수하다", b: "표 C: 2차 관절경 ICRS P=.001, 임상 P>.05" },
       { m: "교정량(방사선 지표)은 연골 재생 결과에 영향을 주지 않았다", b: "표 C: 방사선 지표 군간 P>.05" },
-      { m: "소표본·후향 설계가 근거 수준을 제한한다", b: "표 E: 소표본, 후향" }
+      { m: "적은 표본 수와 후향적 설계가 근거의 강도를 제한한다", b: "표 E: 적은 표본 수, 후향" }
     ],
     tableE: [
       { l: "비교적 적은 환자 수", i: "유의 효과 탐지 검정력 제한", f: "더 큰 표본의 전향 비교 연구 필요" }
@@ -805,7 +806,7 @@ window.PAPERS = [
     title: "Allogenic umbilical cord blood-derived mesenchymal stromal cell implantation was superior to bone marrow aspirate concentrate augmentation for cartilage regeneration despite similar clinical outcomes",
     authors: "Yang HY, Song EK, Kang SJ, Kwak WK, Kang JK, Seon JK",
     journal: "Knee Surgery, Sports Traumatology, Arthroscopy", year: 2022,
-    design: "후향적 코호트(성향점수 매칭)", evidenceLabel: "근거수준 중간 (후향, PS 매칭)",
+    design: "후향적 코호트(성향점수 매칭)", evidenceLabel: "후향적 코호트 연구 (성향점수 매칭)",
     pmid: "33492407", reg: "—", impact: "IF 3.210",
     tableB: {
       question: "HTO에서 BMAC 보강과 hUCB-MSC 이식의 임상·2차 관절경 결과 비교 및 연골 재생-HTO 결과 관계",
@@ -837,7 +838,7 @@ window.PAPERS = [
     title: "Dry arthroscopy with a simple retraction technique for knee joint cartilage repair using allogenic human umbilical cord blood-derived mesenchymal stem cells",
     authors: "Oh SM, Kwon HN",
     journal: "Arthroscopy Techniques", year: 2021,
-    design: "기술 노트(수술 술기)", evidenceLabel: "근거수준 맥락 의존 (술기)",
+    design: "기술 노트(수술 술기)", evidenceLabel: "수술 술기 보고",
     pmid: "35004157", reg: "—", impact: "IF 1.2",
     tableB: {
       question: "특수 장비 없이 관절경하 hUCB-MSC(CARTISTEM) 이식을 가능케 하는 건식 관절경 견인 술기",
@@ -852,7 +853,7 @@ window.PAPERS = [
     ],
     tableD: [
       { m: "특수 장비 없이 통상 관절경 기구로 건식 관절경하 hUCB-MSC 이식이 가능하다", b: "표 B: 단순 견인 술기" },
-      { m: "관절경 접근은 개방 관절절개 대비 조기 가동·반흔 감소 이점이 있다", b: "본문: 관절경의 회복·반흔 이점" },
+      { m: "관절경 접근은 개방 관절절개 대비 조기 관절 가동과 반흔 감소 이점이 있다", b: "본문: 관절경의 회복·반흔 이점" },
       { m: "추가 내측 작업 포털이 필요하며 정량적 효능은 보고되지 않았다", b: "표 E: 포털 추가, 술기 노트" }
     ],
     tableE: [
@@ -866,7 +867,7 @@ window.PAPERS = [
     title: "Safety of an allogeneic, human, umbilical cord blood-derived mesenchymal stem cells-4% hyaluronate composite for cartilage repair in the knee",
     authors: "Cole BJ, Kaiser JT, Wagner KR, Gomoll AH",
     journal: "Journal of Cartilage & Joint Preservation", year: 2022,
-    design: "개방표지 비무작위 1/2a상 임상시험(미국)", evidenceLabel: "근거수준 하위 (단일군 1/2a상)",
+    design: "개방표지 비무작위 1·2a상 임상시험(미국)", evidenceLabel: "1·2a상 임상시험 (단일군)",
     pmid: "원문 미보고", reg: "원문 미보고", impact: "IF 2.961",
     tableB: {
       question: "미국 환자에서 hUCB-MSC + 4% HA 복합체의 무릎 연골 결손에 대한 안전성(주)·효능(부)",
@@ -877,18 +878,18 @@ window.PAPERS = [
     },
     tableC: [
       { v: "치료발현 이상반응(TEAE)", r: "전원 ≥1건(Dose A 42건/n=6, Dose B 27건/n=6); 가동범위 감소 100%, 관절통 92%", c: "—(단일군)", e: "—", s: "안전성" },
-      { v: "치료관련 TEAE", r: "7명(58%)에서 10건; 중단·중대이상반응·사망 0건", c: "—", e: "—", s: "안전성" },
+      { v: "치료관련 TEAE", r: "7명(58%)에서 10건; 중단·중대한 이상반응·사망 0건", c: "—", e: "—", s: "안전성" },
       { v: "용량제한독성 / 최대내약용량", r: "DLT 0건; MTD 2.0×10⁷ 세포", c: "—", e: "—", s: "안전성" },
       { v: "IKDC 등 기능·통증", r: "기저 대비 12·24개월 유의 개선", c: "—", e: "—", s: "유의(원문)" },
       { v: "임상적 유의 MRI 이상", r: "기저 91.7%(n=11) → 24개월 16.7%(n=2)", c: "—", e: "—", s: "—" }
     ],
     tableD: [
-      { m: "미국 ICRS 3~4 환자에서 hUCB-MSC-4%HA 복합체 이식은 24개월간 안전하다", b: "표 C: 중대이상반응·사망·DLT 0건, MTD 2.0×10⁷" },
+      { m: "미국 ICRS 3~4 환자에서 hUCB-MSC-4%HA 복합체 이식은 24개월간 안전하다", b: "표 C: 중대한 이상반응·사망·DLT 0건, MTD 2.0×10⁷" },
       { m: "기능·통증이 개선되고 MRI 이상 소견이 감소하여 연골 회복 근거를 보인다", b: "표 C: IKDC 12·24개월 유의 개선, MRI 이상 91.7→16.7%" },
-      { m: "소표본·개방표지·대조군 부재로 효능은 예비적이다", b: "표 E: 1/2상의 본질적 한계" }
+      { m: "적은 표본 수, 개방표지 설계, 대조군 부재로 효능은 예비적이다", b: "표 E: 1·2상의 본질적 한계" }
     ],
     tableE: [
-      { l: "소표본·개방표지·대조군 부재(1/2상 특성)", i: "효능 결과는 예비적", f: "한국 3상 데이터가 유사 이익을 시사 — 추가 검증의 기반 형성" }
+      { l: "적은 표본 수, 개방표지 설계, 대조군 부재(1·2상 시험의 특성)", i: "효능 결과는 예비적", f: "한국 3상 데이터가 유사 이익을 시사 — 추가 검증의 기반 형성" }
     ]
   },
 
@@ -898,7 +899,7 @@ window.PAPERS = [
     title: "Human umbilical cord-blood-derived mesenchymal stem cell can improve the clinical outcome and joint space width after high tibial osteotomy",
     authors: "Suh DW, Han SB, Yeo WJ, Cheong K, So SY, Kyung BS",
     journal: "The Knee", year: 2021,
-    design: "비무작위 비교 연구", evidenceLabel: "근거수준 중간 (비무작위 비교)",
+    design: "비무작위 비교 연구", evidenceLabel: "비무작위 비교 연구",
     pmid: "34536766", reg: "—", impact: "IF 2.423",
     tableB: {
       question: "HTO에서 hUCB-MSC 연골재생술과 미세골절의 임상·방사선 결과 비교",
@@ -915,11 +916,11 @@ window.PAPERS = [
     tableD: [
       { m: "HTO에서 hUCB-MSC 연골재생술은 미세골절 단독보다 임상결과(IKDC)와 관절간격(JSW)을 더 개선한다", b: "표 C: IKDC 69 vs 62, JSW 0.6 vs 0.1 mm(P<0.05)" },
       { m: "대조군을 둔 비교 설계로 미세골절 대비 이점을 직접 제시한다", b: "표 B: MSC 43 vs 대조 57" },
-      { m: "소표본·비무작위·수술 전 임상자료 부재가 근거를 제한한다", b: "표 E: 비무작위, 수술 전 데이터 없음" }
+      { m: "적은 표본 수, 비무작위 설계, 수술 전 임상 자료 부재가 근거를 제한한다", b: "표 E: 비무작위, 수술 전 데이터 없음" }
     ],
     tableE: [
-      { l: "소표본·비무작위", i: "선택 편향 가능", f: "무작위 전향 연구 필요" },
-      { l: "추적 짧음·수술 전 임상자료 부재·연골재생 상세자료(MRI·2차 관절경) 부재", i: "연골 재생 직접 평가 제한", f: "영상·2차 관절경 포함 연구 필요" }
+      { l: "적은 표본 수와 비무작위 설계", i: "선택 편향 가능", f: "무작위 전향 연구 필요" },
+      { l: "추적 기간이 짧고, 수술 전 임상 자료와 연골 재생 상세 자료(MRI·2차 관절경)가 없음", i: "연골 재생 직접 평가 제한", f: "영상·2차 관절경 포함 연구 필요" }
     ]
   },
 
@@ -929,7 +930,7 @@ window.PAPERS = [
     title: "Cartilage Regeneration Using Human Umbilical Cord Blood Derived Mesenchymal Stem Cells: A Systematic Review and Meta-Analysis",
     authors: "Lee DH, Kim SA, Song JS, Shetty AA, Kim BH, Kim SJ",
     journal: "Medicina (Kaunas)", year: 2022,
-    design: "체계적 문헌고찰 및 메타분석(PRISMA)", evidenceLabel: "근거수준 최상위 (SR/메타분석)",
+    design: "체계적 문헌고찰 및 메타분석(PRISMA)", evidenceLabel: "체계적 문헌고찰·메타분석",
     pmid: "36557003", reg: "—", impact: "IF 2.43",
     tableB: {
       question: "무릎 연골 결손·골관절염에서 hUCB-MSC 치료의 효능과 안전성(통합 분석)",
@@ -961,7 +962,7 @@ window.PAPERS = [
     title: "Cartilage regeneration using human umbilical cord blood-derived mesenchymal stem cells for a patellar cartilage defect with patellar dislocation: A case report",
     authors: "Kim SJ, et al.",
     journal: "World Journal of Clinical Cases", year: 2022,
-    design: "증례 보고(1례)", evidenceLabel: "근거수준 하위 (증례 보고)",
+    design: "증례 보고(1례)", evidenceLabel: "증례 보고",
     pmid: "36579106", reg: "—", impact: "IF 1.15",
     tableB: {
       question: "슬개골 탈구에 동반된 슬개골 연골 결손에 hUCB-MSC를 이용한 연골 재생",
@@ -990,7 +991,7 @@ window.PAPERS = [
     title: "Allogeneic Umbilical Cord-Blood-Derived Mesenchymal Stem Cells and Hyaluronate Composite Combined with High Tibial Osteotomy for Medial Knee Osteoarthritis with Full-Thickness Cartilage Defects",
     authors: "Park YB, Lee HJ, Nam HC, Park JG",
     journal: "Medicina (Kaunas)", year: 2023,
-    design: "후향적 증례 시리즈, 대조군 없음", evidenceLabel: "근거수준 하위 (후향 증례 시리즈)",
+    design: "후향적 증례 시리즈, 대조군 없음", evidenceLabel: "후향적 증례 시리즈",
     pmid: "36676772", reg: "—", impact: "IF 2.43",
     tableB: {
       question: "전층 연골 결손 동반 내측 무릎 골관절염에서 HTO + UCB-MSC-HA 복합체 이식의 임상결과·연골 회복",
@@ -1001,16 +1002,16 @@ window.PAPERS = [
     },
     tableC: [
       { v: "VAS·WOMAC 등 임상", r: "최종 추적 모두 개선", c: "—(단일군)", e: "—", s: "원문(개선)" },
-      { v: "2차 관절경 ICRS-CRA(10명)", r: "grade I 10% / II 70% / III 20% (정상·거의 정상 80%)", c: "—", e: "전 예 재생 조직 관찰", s: "—" }
+      { v: "2차 관절경 ICRS-CRA(10명)", r: "grade I 10% / II 70% / III 20% (정상·거의 정상 80%)", c: "—", e: "모든 증례에서 재생 조직 관찰", s: "—" }
     ],
     tableD: [
-      { m: "HTO + UCB-MSC-HA 복합체는 전층 연골 결손 동반 내측 무릎 OA에서 양호한 임상결과와 전 예 연골 회복을 보인다", b: "표 C: 임상 개선, 2차 관절경 80% 정상·거의 정상" },
-      { m: "전층 연골 결손 환자의 좋은 치료 옵션이 될 수 있다", b: "표 C: ICRS-CRA I~III 전 예" },
-      { m: "후향·소표본·대조군 부재가 근거를 제한한다", b: "표 E: 후향, 소표본" }
+      { m: "HTO + UCB-MSC-HA 복합체는 전층 연골 결손 동반 내측 무릎 OA에서 양호한 임상결과와 모든 증례에서의 연골 회복을 보인다", b: "표 C: 임상 개선, 2차 관절경 80% 정상·거의 정상" },
+      { m: "전층 연골 결손 환자의 좋은 치료 옵션이 될 수 있다", b: "표 C: 모든 증례에서 ICRS-CRA I~III" },
+      { m: "후향적 설계, 적은 표본 수, 대조군 부재가 근거를 제한한다", b: "표 E: 후향적 설계, 적은 표본 수" }
     ],
     tableE: [
-      { l: "후향적·대조군 부재", i: "비교 효능 추론 제한", f: "(해당 병용 보고 드묾) 대조 연구 필요" },
-      { l: "소표본(n=12)", i: "검정력 제한", f: "더 큰 표본 연구 필요" }
+      { l: "후향적 연구이며 대조군 부재", i: "비교 효능 추론 제한", f: "(해당 병용 보고 드묾) 대조 연구 필요" },
+      { l: "적은 표본 수(n=12)", i: "검정력 제한", f: "더 큰 표본 연구 필요" }
     ]
   },
 
@@ -1020,7 +1021,7 @@ window.PAPERS = [
     title: "Cost Effectiveness of Allogeneic Umbilical Cord Blood-Derived Mesenchymal Stem Cells in Patients with Knee Osteoarthritis",
     authors: "Suh K, Cole BJ, Gomoll A, Lee SM, Choi H, Ha CW, Lim HC, Kim MK, Ha GY, Suh DC",
     journal: "Applied Health Economics and Health Policy", year: 2023,
-    design: "비용효과 분석(분할생존 모형)", evidenceLabel: "근거수준 맥락 의존 (경제성 모형)",
+    design: "비용효과 분석(분할생존 모형)", evidenceLabel: "비용효과 분석 (경제성 모형)",
     pmid: "36136263", reg: "—", impact: "IF 3.686",
     tableB: {
       question: "한국에서 골관절염 연골 결손 환자 대상 hUCB-MSC(+Na-hyaluronate)는 미세골절 대비 비용효과적인가",
@@ -1051,7 +1052,7 @@ window.PAPERS = [
     title: "Safety and effectiveness of arthroscopic-assisted implantation of allogenic umbilical cord blood-derived mesenchymal stem cells (Cartistem®)",
     authors: "Cha DH, Kim DH, Kook JM",
     journal: "Arthroscopy and Orthopedic Sports Medicine", year: 2023,
-    design: "후향적 연구(증례 시리즈)", evidenceLabel: "근거수준 하위 (후향 증례 시리즈)",
+    design: "후향적 연구(증례 시리즈)", evidenceLabel: "후향적 증례 시리즈",
     pmid: "—", reg: "—", impact: "—",
     tableB: {
       question: "KL II·III 내측 구획 골관절염에서 내측 개방쐐기 HTO 중 관절경 보조 Cartistem® 이식의 안전성·효능(방사선·임상)",
@@ -1065,12 +1066,12 @@ window.PAPERS = [
       { v: "관절간격(JSD)", r: "3.75 mm → 4.63 mm", c: "—", e: "—", s: "유의(원문)" },
       { v: "해부학적 대퇴경골각(FTA)", r: "내반 2.46° → 외반 9.28°", c: "—", e: "—", s: "교정" },
       { v: "KSS / Lysholm", r: "46.63→70.50 / 43.5→75.5", c: "—", e: "—", s: "유의한 차이(원문)" },
-      { v: "2차 관절경 ICRS", r: "전 예 유의 개선", c: "—", e: "—", s: "—" }
+      { v: "2차 관절경 ICRS", r: "모든 증례 유의 개선", c: "—", e: "—", s: "—" }
     ],
     tableD: [
       { m: "KL II·III, ICRS IV 내측 구획 OA에서 내측 owHTO 중 관절경하 Cartistem® 연골성형술은 방사선·임상 결과를 유의하게 개선한다", b: "표 C: JSD 3.75→4.63 mm, KSS 46.63→70.50, Lysholm 43.5→75.5" },
-      { m: "정렬 교정과 함께 2차 관절경상 전 예 연골 등급이 개선되었다", b: "표 C: FTA 내반2.46°→외반9.28°, ICRS 전 예 개선" },
-      { m: "소표본(8명)·후향·대조군 부재로 근거는 예비적이다", b: "표 B/E: 8명, 생검 미시행" }
+      { m: "정렬 교정과 함께 2차 관절경상 모든 증례의 연골 등급이 개선되었다", b: "표 C: FTA 내반2.46°→외반9.28°, 모든 증례에서 ICRS 개선" },
+      { m: "적은 표본 수(8명), 후향적 설계, 대조군 부재로 근거는 예비적이다", b: "표 B/E: 8명, 생검 미시행" }
     ],
     tableE: [
       { l: "재생 연골 생검 미시행(관절강 협소로 탐침 시 손상 우려)", i: "조직학적 재생 직접 확인 제한", f: "정밀한 재생 상태 평가 방법 필요" }
@@ -1083,7 +1084,7 @@ window.PAPERS = [
     title: "Dry Arthroscopic Cartilage Repair of the Knee Joint Using Umbilical Cord Mesenchymal Stem Cells: Kelly Clamp Technique",
     authors: "Lee TJ, Jeong CD, Lee TH",
     journal: "Arthroscopy Techniques", year: 2023,
-    design: "기술 노트(수술 술기)", evidenceLabel: "근거수준 맥락 의존 (술기)",
+    design: "기술 노트(수술 술기)", evidenceLabel: "수술 술기 보고",
     pmid: "37654868", reg: "—", impact: "IF 1.9",
     tableB: {
       question: "건식 관절경하 hUCB-MSC(CARTISTEM) 이식을 위한 Kelly clamp 작업공간 확보 술기",
@@ -1098,7 +1099,7 @@ window.PAPERS = [
     ],
     tableD: [
       { m: "Kelly clamp를 이용해 더 쉽고 효과적인 건식 관절경하 UCB-MSC 이식이 가능하다", b: "표 B: Kelly clamp 견인 술기" },
-      { m: "관절경 접근은 개방 관절절개보다 조기 회복·반흔 감소 이점이 있다", b: "본문: 관절경의 이점" },
+      { m: "관절경 접근은 개방 관절절개보다 조기 회복과 반흔 감소 이점이 있다", b: "본문: 관절경의 이점" },
       { m: "정량적 임상 효능은 보고되지 않은 술기 노트이다", b: "표 C: 효능 미보고" }
     ],
     tableE: [
@@ -1112,7 +1113,7 @@ window.PAPERS = [
     title: "Bone Marrow Aspirate Concentrate versus Human Umbilical Cord Blood-Derived Mesenchymal Stem Cells for Combined Cartilage Regeneration Procedure in Patients Undergoing High Tibial Osteotomy: A Systematic Review and Meta-Analysis",
     authors: "Park D, Choi YH, Kang SH, Koh HS, In Y",
     journal: "Medicina (Kaunas)", year: 2023,
-    design: "체계적 문헌고찰 및 메타분석(PRISMA)", evidenceLabel: "근거수준 최상위 (SR/메타분석)",
+    design: "체계적 문헌고찰 및 메타분석(PRISMA)", evidenceLabel: "체계적 문헌고찰·메타분석",
     pmid: "36984635", reg: "—", impact: "IF 2.6",
     tableB: {
       question: "HTO를 받는 내반 무릎 OA 환자에서 BMAC와 hUCB-MSC 연골 재생술의 임상 효능 비교",
@@ -1129,10 +1130,10 @@ window.PAPERS = [
     tableD: [
       { m: "BMAC와 hUCB-MSC 모두 내반 무릎 OA에서 임상결과를 개선하며 둘 사이 임상적 차이는 없다", b: "표 C: IKDC p=0.91, KSS 통증 p=0.85 등" },
       { m: "2차 관절경상 연골 재생은 hUCB-MSC가 BMAC보다 더 효과적이다", b: "표 C: ICRS-CRA p<0.001" },
-      { m: "포함 연구가 모두 LoE 3~4 후향으로 RCT가 부재하다", b: "표 E: RCT 부재, 후향 연구" }
+      { m: "포함 연구가 모두 근거수준 3~4의 후향적 연구로 무작위 대조시험이 없다", b: "표 E: RCT 부재, 후향 연구" }
     ],
     tableE: [
-      { l: "포함 연구가 LoE 3~4 후향적 성격, RCT·전향 비교 연구 부재", i: "교란 통제·근거 강도 제한", f: "더 높은 검정력의 RCT 필요" }
+      { l: "포함 연구가 모두 근거수준 3~4의 후향적 연구이며, 무작위 대조시험·전향적 비교 연구가 없음", i: "교란 통제·근거 강도 제한", f: "더 높은 검정력의 RCT 필요" }
     ]
   },
 
@@ -1142,7 +1143,7 @@ window.PAPERS = [
     title: "Clinical and Magnetic Resonance Imaging Outcomes After Human Cord Blood-Derived Mesenchymal Stem Cell Implantation for Chondral Defects of the Knee",
     authors: "Song JS, Hong KT, Kim NM, Hwangbo BH, Yang BS, Victoroff BN, Choi NH",
     journal: "Orthopaedic Journal of Sports Medicine", year: 2023,
-    design: "증례 시리즈", evidenceLabel: "근거수준 하위 (LoE 4)",
+    design: "증례 시리즈", evidenceLabel: "후향적 증례 시리즈 (Level IV)",
     pmid: "37123990", reg: "—", impact: "IF 2.6",
     tableB: {
       question: "무릎 연골 결손에 대한 UCB-MSC 이식 후 임상·MRI 결과 및 재생 연골 비대(hypertrophy)와 임상의 관계",
@@ -1159,7 +1160,7 @@ window.PAPERS = [
     tableD: [
       { m: "UCB-MSC 이식 후 단기 임상결과가 유의하게 개선된다", b: "표 C: 모든 PRO P<.001" },
       { m: "재생 연골의 비대(hypertrophy)가 관찰되나 그 정도는 임상결과와 상관이 없다", b: "표 C: 비대 등급-PRO 상관 없음" },
-      { m: "증례 시리즈(LoE 4)·대조군 부재로 비교 효능 추론은 제한된다", b: "표 E: LoE 4" }
+      { m: "증례 시리즈(Level IV)이고 대조군이 없어 비교 효능 추론은 제한된다", b: "표 E: LoE 4" }
     ],
     tableE: [
       { l: "재생 연골 두께를 수술 1년 후 측정", i: "1년 이후 추가 비대 가능성 미반영", f: "장기 비대 변화 추적 필요" }
@@ -1172,7 +1173,7 @@ window.PAPERS = [
     title: "Effects of concurrent cartilage procedures on cartilage regeneration in high tibial osteotomy: a systematic review",
     authors: "Han JH, Jung M, Chung K, Jung SH, Choi CH, Kim SH",
     journal: "Knee Surgery & Related Research", year: 2024,
-    design: "체계적 문헌고찰(PRISMA)", evidenceLabel: "근거수준 최상위 (체계적 문헌고찰)",
+    design: "체계적 문헌고찰(PRISMA)", evidenceLabel: "체계적 문헌고찰",
     pmid: "38549124", reg: "—", impact: "IF 4.1",
     tableB: {
       question: "HTO 시 병용 연골 재생술이 연골 재생에 미치는 효과(술식별 비교)",
@@ -1203,7 +1204,7 @@ window.PAPERS = [
     title: "Allogeneic umbilical cord blood-derived mesenchymal stem cell implantation versus microdrilling combined with high tibial osteotomy for cartilage regeneration",
     authors: "Jung SH, Nam BJ, Choi CH, Kim S, Jung M, Chung K, Park J, Jung Y, Kim SH",
     journal: "Scientific Reports", year: 2024,
-    design: "후향적 비교 연구", evidenceLabel: "근거수준 중간 (후향 비교)",
+    design: "후향적 비교 연구", evidenceLabel: "후향적 비교 연구",
     pmid: "38336978", reg: "—", impact: "IF 4.6",
     tableB: {
       question: "무릎 OA에서 HTO 병용 hUCB-MSC 이식과 미세천공(microdrilling)의 연골 재생 결과 비교",
@@ -1221,10 +1222,10 @@ window.PAPERS = [
     tableD: [
       { m: "내측 OA에서 hUCB-MSC와 미세천공 모두 효과적이나, hUCB-MSC가 환자보고결과·연골 재생에서 더 우수하다", b: "표 C: 24개월 임상 우월, 12개월 관절경 치유 우월" },
       { m: "특히 전방 병변에서 hUCB-MSC의 연골 치유가 더 우월하다", b: "표 C: 부위별 하위분석" },
-      { m: "소표본·후향·조직학 평가 부재가 근거를 제한한다", b: "표 E: 후향, 소표본, 조직학 없음" }
+      { m: "적은 표본 수, 후향적 설계, 조직학적 평가 부재가 근거를 제한한다", b: "표 E: 후향적 설계, 적은 표본 수, 조직학 평가 없음" }
     ],
     tableE: [
-      { l: "후향적·소표본", i: "통계적 검정력 제한", f: "대규모 잘 설계된 전향 무작위 시험 필요" },
+      { l: "후향적 설계와 적은 표본 수", i: "통계적 검정력 제한", f: "대규모 잘 설계된 전향 무작위 시험 필요" },
       { l: "조직학적 평가 부재", i: "재생 연골 질 정보 제한", f: "조직학 포함 연구 필요" }
     ]
   },
@@ -1235,7 +1236,7 @@ window.PAPERS = [
     title: "Implantation of hUCB-MSCs generates greater hyaline-type cartilage than microdrilling combined with high tibial osteotomy",
     authors: "Jung SH, Park H, Jung M, Chung K, Kim S, Moon HS, Park J, Lee JH, Choi CH, Kim SH",
     journal: "Knee Surgery, Sports Traumatology, Arthroscopy", year: 2024,
-    design: "전향적 비교 코호트 연구", evidenceLabel: "근거수준 중간 (전향 비교, LoE II)",
+    design: "전향적 비교 코호트 연구", evidenceLabel: "전향적 비교 코호트 연구 (Level II)",
     pmid: "38426617", reg: "—", impact: "IF 3.3",
     tableB: {
       question: "큰 연골 결손에서 hUCB-MSC 이식과 관절경 미세천공(병용 HTO)의 재생 연골 질(유리연골형) 비교",
@@ -1254,11 +1255,11 @@ window.PAPERS = [
     tableD: [
       { m: "더 큰 결손에도 불구하고 hUCB-MSC 이식은 미세천공과 임상결과가 동등하다", b: "표 C: 결손 7.2 vs 5.2 cm²(p=0.023), 임상 군간 차이 없음" },
       { m: "hUCB-MSC는 미세천공보다 유리연골형(2형 콜라겐) 재생을 더 많이 생성한다", b: "표 C: 2형 콜라겐 93.3% vs 60%, 유리연골 p=0.041" },
-      { m: "소표본·대조군 추적소실(5명)이 2종 오류 위험을 높인다", b: "표 E: 소표본, 대조군 5명 소실" }
+      { m: "적은 표본 수와 대조군 추적 소실(5명)이 제2종 오류 위험을 높인다", b: "표 E: 적은 표본 수, 대조군 5명 추적 소실" }
     ],
     tableE: [
       { l: "표본 크기가 작음(생검 동의 확보·연구기간 우려로 최소화)", i: "주요 한계, 검정력 제한", f: "더 큰 표본 연구 필요" },
-      { l: "대조군 5명 추적 소실", i: "2종 오류(Type II) 위험 증가", f: "추적 유지 강화 필요" }
+      { l: "대조군 5명 추적 소실", i: "제2종 오류(Type II) 위험 증가", f: "추적 유지 강화 필요" }
     ]
   },
 
@@ -1268,7 +1269,7 @@ window.PAPERS = [
     title: "Effect of preoperative medial meniscus status on the outcomes of high tibial osteotomy with human umbilical cord-derived mesenchymal stem cells cartilage regeneration",
     authors: "Lee DW, Hong SW, Cho SI, Moon SG, Kang JH",
     journal: "Orthopaedics & Traumatology: Surgery & Research", year: 2025,
-    design: "후향적 비교 연구", evidenceLabel: "근거수준 중간 (후향 비교, LoE III)",
+    design: "후향적 비교 연구", evidenceLabel: "후향적 비교 연구 (Level III)",
     pmid: "39900334", reg: "—", impact: "IF 2.3",
     tableB: {
       question: "HTO + hUCB-MSC 연골재생에서 수술 전 내측 반월상연골(MM) 상태가 결과에 미치는 영향",
@@ -1281,13 +1282,13 @@ window.PAPERS = [
       { v: "IKDC·WOMAC(군내 개선)", r: "유의 개선(그룹 P)", c: "유의 개선(그룹 L)", e: "양군 개선", s: "p<0.01" },
       { v: "IKDC / WOMAC(군간)", r: "—", c: "—", e: "군간 차이 없음", s: "p=0.21 / p=0.42" },
       { v: "MOCART 2.0 / ICRS-CRA(군간)", r: "—", c: "—", e: "군간 차이 없음", s: "p=0.35 / p=0.08" },
-      { v: "양호 결과 비율(아연골 변화·ICRS I/II)", r: "그룹 P 56% / 84%", c: "그룹 L 31.8% / 72.7%", e: "유의하진 않음", s: "p=0.09 / p=0.48" },
-      { v: "수술 전 MM 탈출 상관", r: "MOCART 2.0 r=−0.24 / 아연골 변화 r=−0.29", c: "—", e: "음의 상관", s: "p=0.03 / p=0.02" }
+      { v: "양호 결과 비율(연골하골 변화·ICRS I/II)", r: "그룹 P 56% / 84%", c: "그룹 L 31.8% / 72.7%", e: "유의하진 않음", s: "p=0.09 / p=0.48" },
+      { v: "수술 전 MM 탈출 상관", r: "MOCART 2.0 r=−0.24 / 연골하골 변화 r=−0.29", c: "—", e: "음의 상관", s: "p=0.03 / p=0.02" }
     ],
     tableD: [
       { m: "HTO + hUCB-MSC는 수술 전 MM 상태와 무관하게 유의한 임상 개선과 연골 재생을 제공한다", b: "표 C: 양군 IKDC·WOMAC p<0.01, 군간 차이 없음" },
-      { m: "수술 전 MM 탈출은 아연골골 변화에 영향을 미쳐 장기 결과에서 MM 상태 고려가 필요하다", b: "표 C: MM 탈출 상관 r=−0.24·−0.29(p=0.03·0.02)" },
-      { m: "후향적 비교(LoE III)·소표본의 선택 편향이 존재한다", b: "표 E: 후향, 선택 편향" }
+      { m: "수술 전 MM 탈출은 연골하골 변화에 영향을 미쳐 장기 결과에서 MM 상태 고려가 필요하다", b: "표 C: MM 탈출 상관 r=−0.24·−0.29(p=0.03·0.02)" },
+      { m: "후향적 비교 연구(Level III)와 적은 표본 수에 따른 선택 편향이 존재한다", b: "표 E: 후향, 선택 편향" }
     ],
     tableE: [
       { l: "후향적 비교 연구로 선택 편향 내재", i: "결과 해석에 편향 영향 가능", f: "전향적 설계 연구 필요" }
@@ -1300,7 +1301,7 @@ window.PAPERS = [
     title: "Treatment of osteoarthritic knee with high tibial osteotomy and allogeneic human umbilical cord blood-derived mesenchymal stem cells combined with hyaluronate hydrogel composite",
     authors: "Bae BS, Jung JW, Jo GO, Kim SA, Go EJ, Cho ML, Shetty AA, Kim SJ",
     journal: "Stem Cell Research & Therapy", year: 2025,
-    design: "증례 시리즈", evidenceLabel: "근거수준 하위 (증례 시리즈)",
+    design: "증례 시리즈", evidenceLabel: "증례 시리즈",
     pmid: "40296133", reg: "—", impact: "IF 7.1",
     tableB: {
       question: "중증 골관절염 중년 환자에서 HTO + hUCB-MSC-HA 복합체 이식 후 연골 재생·임상결과",
@@ -1318,10 +1319,10 @@ window.PAPERS = [
     tableD: [
       { m: "HTO + hUCB-MSC-HA 복합체는 중년 중증 OA 환자에서 2년간 통증·기능·삶의 질을 유의하게 개선한다", b: "표 C: WOMAC·VAS·SF-36 p=0.002~0.020" },
       { m: "하드웨어 제거 시 평가에서 MFC 연골 병변(크기·ICRS)이 유의하게 호전되었다", b: "표 C: MFC 연골 개선" },
-      { m: "소표본 증례 시리즈·짧은 추적이 근거를 제한한다", b: "표 E: 소표본, 단기 추적" }
+      { m: "표본 수가 적은 증례 시리즈와 짧은 추적 기간이 근거를 제한한다", b: "표 E: 적은 표본 수, 짧은 추적 기간" }
     ],
     tableE: [
-      { l: "비교적 짧은 추적·소표본(n=10) 증례 시리즈", i: "장기 효과·일반화 제한", f: "장기 추적·대조 연구 필요" }
+      { l: "비교적 짧은 추적·표본 수가 적은 증례 시리즈(n=10)", i: "장기 효과·일반화 제한", f: "장기 추적·대조 연구 필요" }
     ]
   },
 
@@ -1331,7 +1332,7 @@ window.PAPERS = [
     title: "Patients with advanced lateral osteoarthritis can return to sports and work after distraction arthroplasty plus lateral meniscal allograft transplantation combined with cartilage repair",
     authors: "Lee DW, Lee DR, Kim MA, Cho SI, Lee JK, Kim JG",
     journal: "Knee Surgery, Sports Traumatology, Arthroscopy", year: 2022,
-    design: "후향적 비교 연구", evidenceLabel: "근거수준 중간 (관련 연구·후향)",
+    design: "후향적 비교 연구", evidenceLabel: "후향적 비교 연구",
     pmid: "—", reg: "—", impact: "—",
     tableB: {
       question: "진행성 외측 골관절염 활동적 환자에서 신연 관절성형술(DA) + 외측 반월상연골 동종이식(MAT) + 연골 회복술 후 스포츠·직장 복귀(RTS·RTW)",
@@ -1347,10 +1348,10 @@ window.PAPERS = [
     tableD: [
       { m: "진행성 외측 OA 활동 환자에서 DA + 외측 MAT + 연골 회복 병용이 임상·방사선 개선과 스포츠/직장 복귀를 가능케 한다", b: "표 B/C: 21명 대부분 RTS·RTW" },
       { m: "CARTISTEM 직접 평가가 아닌 외측 구획 연골 보존 전략의 관련 근거이다", b: "표 A: 관련 연구(연골 회복술 병용)" },
-      { m: "후향·소표본으로 일반화는 제한된다", b: "표 E: 후향, n=21" }
+      { m: "후향적 설계와 적은 표본 수로 일반화는 제한된다", b: "표 E: 후향, n=21" }
     ],
     tableE: [
-      { l: "후향적·소표본(n=21), 연골 회복술 세부(세포원) 혼재", i: "CARTISTEM 단독 효과 분리 불가", f: "구획·술식별 비교 연구 필요" }
+      { l: "후향적 설계와 적은 표본 수(n=21), 연골 회복술 세부(세포원) 혼재", i: "CARTISTEM 단독 효과 분리 불가", f: "구획·술식별 비교 연구 필요" }
     ]
   },
 
@@ -1360,7 +1361,7 @@ window.PAPERS = [
     title: "Knee MRI Underestimates the Grade of Cartilage Lesions",
     authors: "Krakowski P, Karpiński R, Jojczuk M, Nogalska A, Jonak J",
     journal: "Applied Sciences", year: 2021,
-    design: "진단정확도 비교 연구(MRI vs 관절경)", evidenceLabel: "근거수준 맥락 의존 (방법론 참고)",
+    design: "진단정확도 비교 연구(MRI vs 관절경)", evidenceLabel: "방법론 참고 연구",
     pmid: "—", reg: "—", impact: "—",
     tableB: {
       question: "무릎 MRI가 관절경(기준) 대비 연골 병변 등급을 정확히 평가하는가",
@@ -1388,7 +1389,7 @@ window.PAPERS = [
     title: "Arthroscopic Measurement of Cartilage Lesions of the Knee Condyle (after debridement)",
     authors: "Robert H, et al.",
     journal: "Cartilage", year: 2011,
-    design: "방법론(측정) 연구", evidenceLabel: "근거수준 맥락 의존 (방법론 참고)",
+    design: "방법론(측정) 연구", evidenceLabel: "방법론 참고 연구",
     pmid: "—", reg: "—", impact: "—",
     tableB: {
       question: "무릎 대퇴과 연골 병변의 깊이·크기를 관절경으로 어떻게 정확히 측정·기준화할 것인가(변연절제 후 기준)",
@@ -1509,18 +1510,18 @@ window.SOURCES = {
   }
   function renderStats() {
     var years = PAPERS.map(function (p) { return p.year; }).filter(Boolean);
-    var byEvid = {}; PAPERS.forEach(function (p) { byEvid[p.evidence] = (byEvid[p.evidence] || 0) + 1; });
-    var evidDetail = Object.keys(EVIDENCE).filter(function (k) { return byEvid[k]; })
-      .map(function (k) { return EVIDENCE[k].label + " " + byEvid[k]; }).join(" · ");
     var byCat = {}; PAPERS.forEach(function (p) { byCat[p.category] = (byCat[p.category] || 0) + 1; });
     var clinical = PAPERS.filter(function (p) {
       return ["rct", "review", "cohort", "caseseries", "casereport"].indexOf(p.category) >= 0;
     }).length;
+    var catDetail = Object.keys(CATEGORY).filter(function (k) { return byCat[k]; })
+      .sort(function (a, b) { return byCat[b] - byCat[a]; })
+      .slice(0, 4).map(function (k) { return CATEGORY[k].label.replace(/\(.+?\)/, "") + " " + byCat[k]; }).join(" · ");
     var cards = [
       { num: PAPERS.length, label: "수록 논문(표 A~E)", detail: Math.min.apply(null, years) + "–" + Math.max.apply(null, years) + " · 임상·중개 " + clinical + "편" },
-      { num: (byCat.rct || 0) + (byCat.review || 0), label: "RCT + 메타분석", detail: "RCT " + (byCat.rct || 0) + " · 체계적 고찰/메타 " + (byCat.review || 0) },
-      { num: clinical, label: "임상·중개 연구", detail: "코호트·증례·RCT 포함" },
-      { num: Object.keys(byEvid).length, label: "근거 수준 분포", detail: evidDetail }
+      { num: (byCat.rct || 0) + (byCat.review || 0), label: "무작위 대조시험 + 메타분석", detail: "무작위 대조시험 " + (byCat.rct || 0) + " · 체계적 고찰/메타 " + (byCat.review || 0) },
+      { num: clinical, label: "임상·중개 연구", detail: "코호트·증례·무작위 대조시험 포함" },
+      { num: Object.keys(byCat).length, label: "연구 유형 분포", detail: catDetail }
     ];
     $("#statsGrid").innerHTML = cards.map(function (c) {
       return '<div class="stat-card"><div class="stat-num">' + c.num + "</div>" +
@@ -1534,11 +1535,6 @@ window.SOURCES = {
     $("#categoryFilters").innerHTML = ["all"].concat(Object.keys(CATEGORY).filter(function (k) { return cc[k]; })
       .sort(function (a, b) { return CATEGORY[a].order - CATEGORY[b].order; })).map(function (k) {
         return chip("category", k, k === "all" ? "전체" : CATEGORY[k].label, cc[k] || 0);
-      }).join("");
-    var ec = { all: PAPERS.length }; PAPERS.forEach(function (p) { ec[p.evidence] = (ec[p.evidence] || 0) + 1; });
-    $("#evidenceFilters").innerHTML = ["all"].concat(Object.keys(EVIDENCE).filter(function (k) { return ec[k]; })
-      .sort(function (a, b) { return EVIDENCE[a].order - EVIDENCE[b].order; })).map(function (k) {
-        return chip("evidence", k, k === "all" ? "근거수준 전체" : "근거 " + EVIDENCE[k].label, ec[k] || 0);
       }).join("");
   }
   function chip(group, key, label, count) {
@@ -1585,7 +1581,7 @@ window.SOURCES = {
   }
   function tableA(p) {
     var rows = [["제목", p.title], ["저자", p.authors], ["저널·연도", p.journal + " (" + p.year + ")"],
-      ["연구 설계", p.design], ["근거 수준", p.evidenceLabel || (EVIDENCE[p.evidence] && EVIDENCE[p.evidence].label) || "—"],
+      ["연구 설계", p.design], ["연구 유형", p.evidenceLabel || (EVIDENCE[p.evidence] && EVIDENCE[p.evidence].label) || "—"],
       ["식별자", "PMID " + (p.pmid || "—") + (p.reg && p.reg !== "—" ? " · " + p.reg : "") + (p.impact && p.impact !== "—" ? " · " + p.impact : "")]];
     return block("A", "논문 식별", '<dl class="kv">' + rows.map(function (r) {
       return "<dt>" + esc(r[0]) + "</dt><dd>" + cell(r[1]) + "</dd>"; }).join("") + "</dl>");
@@ -1623,9 +1619,9 @@ window.SOURCES = {
       rows.map(function (r) { return "<li>" + esc(r.m) + '<span class="basis">근거 · ' + esc(r.b) + "</span></li>"; }).join("") + "</ol></div>";
   }
   function cardHTML(p) {
-    var ev = EVIDENCE[p.evidence] || EVIDENCE.context, cat = CATEGORY[p.category] || { label: p.category };
+    var cat = CATEGORY[p.category] || { label: p.category };
     var tags = '<span class="tag tag-design">' + esc(cat.label) + "</span>" +
-      '<span class="tag tag-evid ' + ev.cls + '">근거 ' + esc(ev.label) + "</span>" +
+      '<span class="tag tag-year">' + esc(p.year) + "</span>" +
       (p.featured ? '<span class="tag tag-featured">핵심 논문</span>' : "");
     return '<article class="paper-card' + (p.featured ? " featured" : "") + '" id="card-' + esc(p.id) + '" data-id="' + esc(p.id) + '">' +
       '<div class="card-head" role="button" tabindex="0" aria-expanded="false">' +
@@ -1674,7 +1670,7 @@ window.SOURCES = {
       switch (state.sort) {
         case "yearDesc": return b.year - a.year || numKey(a) - numKey(b);
         case "yearAsc": return a.year - b.year || numKey(a) - numKey(b);
-        case "evidence": return (EVIDENCE[a.evidence].order - EVIDENCE[b.evidence].order) || numKey(a) - numKey(b);
+        case "type": return ((CATEGORY[a.category] || {}).order - (CATEGORY[b.category] || {}).order) || numKey(a) - numKey(b);
         default: return numKey(a) - numKey(b);
       }
     });
@@ -1780,15 +1776,48 @@ window.SOURCES = {
   function closeMobileSidebar() { document.body.classList.remove("sb-open"); }
 
   /* ---------- 이벤트 ---------- */
+  var allOpen = false;
+  function toggleExpandAll(btn) {
+    showView("home");
+    allOpen = !allOpen;
+    $$(".paper-card").forEach(function (c) {
+      c.classList.toggle("open", allOpen);
+      var h = c.querySelector(".card-head"); if (h) h.setAttribute("aria-expanded", allOpen ? "true" : "false");
+    });
+    if (btn) btn.textContent = allOpen ? "▴ 모두 접기" : "▾ 모두 펼치기";
+  }
+  function smartBack() {
+    // 앱 내부 상태(논문/논문모음)면 홈으로, 아니면 브라우저 뒤로
+    var h = location.hash || "";
+    if (h.indexOf("#/paper/") === 0 || h.indexOf("#/sources") === 0) { location.hash = "#/home"; }
+    else if (history.length > 1) { history.back(); }
+    else { window.scrollTo({ top: 0, behavior: "smooth" }); }
+  }
+
   function bindGlobal() {
     $("#searchInput").addEventListener("input", function (e) { state.search = e.target.value; renderCards(); });
     $("#sortSelect").addEventListener("change", function (e) { state.sort = e.target.value; renderCards(); });
 
+    // 단일 위임 클릭 핸들러 — 툴바·사이드바·카드 모든 버튼 처리(바인딩 누락 방지)
     document.addEventListener("click", function (e) {
+      var act = e.target.closest("[data-action]");
+      if (act) {
+        e.preventDefault();
+        switch (act.getAttribute("data-action")) {
+          case "font-down": setFont(curFont() - 1); return;
+          case "font-up": setFont(curFont() + 1); return;
+          case "font-reset": setFont(2); return;
+          case "back": smartBack(); return;
+          case "print": window.print(); return;
+          case "expand": toggleExpandAll(act); return;
+          case "menu": document.body.classList.toggle("sb-open"); return;
+          case "top": window.scrollTo({ top: 0, behavior: "smooth" }); return;
+        }
+      }
       var chipEl = e.target.closest(".chip");
       if (chipEl) { state[chipEl.getAttribute("data-group")] = chipEl.getAttribute("data-key"); renderFilters(); renderCards(); return; }
       var route = e.target.closest("[data-route]");
-      if (route) { location.hash = route.getAttribute("data-route"); closeMobileSidebar(); return; }
+      if (route) { e.preventDefault(); location.hash = route.getAttribute("data-route"); closeMobileSidebar(); return; }
       var paperBtn = e.target.closest("[data-paper]");
       if (paperBtn) { gotoPaper(paperBtn.getAttribute("data-paper")); return; }
       var gotoBtn = e.target.closest("[data-goto]");
@@ -1797,32 +1826,11 @@ window.SOURCES = {
       if (printBtn) { e.preventDefault(); printCard(printBtn.getAttribute("data-print")); return; }
       var gh = e.target.closest(".sb-group-head");
       if (gh) { gh.closest(".sb-group").classList.toggle("collapsed"); return; }
+      if (e.target.closest("#sbBackdrop")) { closeMobileSidebar(); return; }
     });
-
-    $("#fontDown").addEventListener("click", function () { setFont(curFont() - 1); });
-    $("#fontUp").addEventListener("click", function () { setFont(curFont() + 1); });
-    $("#fontReset").addEventListener("click", function () { setFont(2); });
-
-    $("#backBtn").addEventListener("click", function () { history.back(); });
-    $("#printBtn").addEventListener("click", function () { window.print(); });
-
-    var allOpen = false;
-    $("#expandAllBtn").addEventListener("click", function () {
-      allOpen = !allOpen;
-      $$(".paper-card").forEach(function (c) {
-        c.classList.toggle("open", allOpen);
-        var h = c.querySelector(".card-head"); if (h) h.setAttribute("aria-expanded", allOpen ? "true" : "false");
-      });
-      this.textContent = allOpen ? "▴ 모두 접기" : "▾ 모두 펼치기";
-    });
-
-    $("#hamburger").addEventListener("click", function () { document.body.classList.toggle("sb-open"); });
-    $("#sbBackdrop").addEventListener("click", closeMobileSidebar);
 
     var toTop = $("#toTop");
     window.addEventListener("scroll", function () { toTop.hidden = window.scrollY < 400; }, { passive: true });
-    toTop.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
-
     window.addEventListener("hashchange", handleHash);
   }
 

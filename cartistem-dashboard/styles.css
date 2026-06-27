@@ -193,6 +193,7 @@ body {
 .tag-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
 .tag { font-size: .71rem; font-weight: 700; padding: .22rem .6rem; border-radius: 999px; white-space: nowrap; }
 .tag-design { background: var(--accent-soft); color: var(--accent); }
+.tag-year { background: #eef2f6; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
 .tag-featured { background: var(--gold-soft); color: var(--gold); }
 .tag-evid { color: #fff; }
 .evid-top { background: var(--evid-top); } .evid-high { background: var(--evid-high); }
@@ -262,7 +263,8 @@ table.t .col-var { font-weight: 600; color: var(--ink); width: 26%; }
 .src-table-wrap { overflow-x: auto; }
 .src-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .src-table th, .src-table td { border-bottom: 1px solid var(--line); padding: .65rem .7rem; text-align: left; vertical-align: top; }
-.src-table thead th { background: #eef3f8; color: var(--ink-soft); font-weight: 700; font-size: .78rem; position: sticky; top: var(--tb-h); }
+.src-table thead th { background: #eef3f8; color: var(--ink-soft); font-weight: 700; font-size: .78rem; }
+.src-table .s-goto { white-space: nowrap; }
 .src-table .s-num { font-weight: 800; color: var(--primary-dark); white-space: nowrap; }
 .src-table .s-title { font-weight: 600; color: var(--ink); max-width: 34rem; }
 .src-table .s-jour { color: var(--ink-faint); font-size: .8rem; }

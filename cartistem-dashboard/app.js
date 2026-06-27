@@ -54,18 +54,18 @@
   }
   function renderStats() {
     var years = PAPERS.map(function (p) { return p.year; }).filter(Boolean);
-    var byEvid = {}; PAPERS.forEach(function (p) { byEvid[p.evidence] = (byEvid[p.evidence] || 0) + 1; });
-    var evidDetail = Object.keys(EVIDENCE).filter(function (k) { return byEvid[k]; })
-      .map(function (k) { return EVIDENCE[k].label + " " + byEvid[k]; }).join(" · ");
     var byCat = {}; PAPERS.forEach(function (p) { byCat[p.category] = (byCat[p.category] || 0) + 1; });
     var clinical = PAPERS.filter(function (p) {
       return ["rct", "review", "cohort", "caseseries", "casereport"].indexOf(p.category) >= 0;
     }).length;
+    var catDetail = Object.keys(CATEGORY).filter(function (k) { return byCat[k]; })
+      .sort(function (a, b) { return byCat[b] - byCat[a]; })
+      .slice(0, 4).map(function (k) { return CATEGORY[k].label.replace(/\(.+?\)/, "") + " " + byCat[k]; }).join(" · ");
     var cards = [
       { num: PAPERS.length, label: "수록 논문(표 A~E)", detail: Math.min.apply(null, years) + "–" + Math.max.apply(null, years) + " · 임상·중개 " + clinical + "편" },
-      { num: (byCat.rct || 0) + (byCat.review || 0), label: "RCT + 메타분석", detail: "RCT " + (byCat.rct || 0) + " · 체계적 고찰/메타 " + (byCat.review || 0) },
-      { num: clinical, label: "임상·중개 연구", detail: "코호트·증례·RCT 포함" },
-      { num: Object.keys(byEvid).length, label: "근거 수준 분포", detail: evidDetail }
+      { num: (byCat.rct || 0) + (byCat.review || 0), label: "무작위 대조시험 + 메타분석", detail: "무작위 대조시험 " + (byCat.rct || 0) + " · 체계적 고찰/메타 " + (byCat.review || 0) },
+      { num: clinical, label: "임상·중개 연구", detail: "코호트·증례·무작위 대조시험 포함" },
+      { num: Object.keys(byCat).length, label: "연구 유형 분포", detail: catDetail }
     ];
     $("#statsGrid").innerHTML = cards.map(function (c) {
       return '<div class="stat-card"><div class="stat-num">' + c.num + "</div>" +
@@ -79,11 +79,6 @@
     $("#categoryFilters").innerHTML = ["all"].concat(Object.keys(CATEGORY).filter(function (k) { return cc[k]; })
       .sort(function (a, b) { return CATEGORY[a].order - CATEGORY[b].order; })).map(function (k) {
         return chip("category", k, k === "all" ? "전체" : CATEGORY[k].label, cc[k] || 0);
-      }).join("");
-    var ec = { all: PAPERS.length }; PAPERS.forEach(function (p) { ec[p.evidence] = (ec[p.evidence] || 0) + 1; });
-    $("#evidenceFilters").innerHTML = ["all"].concat(Object.keys(EVIDENCE).filter(function (k) { return ec[k]; })
-      .sort(function (a, b) { return EVIDENCE[a].order - EVIDENCE[b].order; })).map(function (k) {
-        return chip("evidence", k, k === "all" ? "근거수준 전체" : "근거 " + EVIDENCE[k].label, ec[k] || 0);
       }).join("");
   }
   function chip(group, key, label, count) {
@@ -130,7 +125,7 @@
   }
   function tableA(p) {
     var rows = [["제목", p.title], ["저자", p.authors], ["저널·연도", p.journal + " (" + p.year + ")"],
-      ["연구 설계", p.design], ["근거 수준", p.evidenceLabel || (EVIDENCE[p.evidence] && EVIDENCE[p.evidence].label) || "—"],
+      ["연구 설계", p.design], ["연구 유형", p.evidenceLabel || (EVIDENCE[p.evidence] && EVIDENCE[p.evidence].label) || "—"],
       ["식별자", "PMID " + (p.pmid || "—") + (p.reg && p.reg !== "—" ? " · " + p.reg : "") + (p.impact && p.impact !== "—" ? " · " + p.impact : "")]];
     return block("A", "논문 식별", '<dl class="kv">' + rows.map(function (r) {
       return "<dt>" + esc(r[0]) + "</dt><dd>" + cell(r[1]) + "</dd>"; }).join("") + "</dl>");
@@ -168,9 +163,9 @@
       rows.map(function (r) { return "<li>" + esc(r.m) + '<span class="basis">근거 · ' + esc(r.b) + "</span></li>"; }).join("") + "</ol></div>";
   }
   function cardHTML(p) {
-    var ev = EVIDENCE[p.evidence] || EVIDENCE.context, cat = CATEGORY[p.category] || { label: p.category };
+    var cat = CATEGORY[p.category] || { label: p.category };
     var tags = '<span class="tag tag-design">' + esc(cat.label) + "</span>" +
-      '<span class="tag tag-evid ' + ev.cls + '">근거 ' + esc(ev.label) + "</span>" +
+      '<span class="tag tag-year">' + esc(p.year) + "</span>" +
       (p.featured ? '<span class="tag tag-featured">핵심 논문</span>' : "");
     return '<article class="paper-card' + (p.featured ? " featured" : "") + '" id="card-' + esc(p.id) + '" data-id="' + esc(p.id) + '">' +
       '<div class="card-head" role="button" tabindex="0" aria-expanded="false">' +
@@ -219,7 +214,7 @@
       switch (state.sort) {
         case "yearDesc": return b.year - a.year || numKey(a) - numKey(b);
         case "yearAsc": return a.year - b.year || numKey(a) - numKey(b);
-        case "evidence": return (EVIDENCE[a.evidence].order - EVIDENCE[b.evidence].order) || numKey(a) - numKey(b);
+        case "type": return ((CATEGORY[a.category] || {}).order - (CATEGORY[b.category] || {}).order) || numKey(a) - numKey(b);
         default: return numKey(a) - numKey(b);
       }
     });
@@ -325,15 +320,48 @@
   function closeMobileSidebar() { document.body.classList.remove("sb-open"); }
 
   /* ---------- 이벤트 ---------- */
+  var allOpen = false;
+  function toggleExpandAll(btn) {
+    showView("home");
+    allOpen = !allOpen;
+    $$(".paper-card").forEach(function (c) {
+      c.classList.toggle("open", allOpen);
+      var h = c.querySelector(".card-head"); if (h) h.setAttribute("aria-expanded", allOpen ? "true" : "false");
+    });
+    if (btn) btn.textContent = allOpen ? "▴ 모두 접기" : "▾ 모두 펼치기";
+  }
+  function smartBack() {
+    // 앱 내부 상태(논문/논문모음)면 홈으로, 아니면 브라우저 뒤로
+    var h = location.hash || "";
+    if (h.indexOf("#/paper/") === 0 || h.indexOf("#/sources") === 0) { location.hash = "#/home"; }
+    else if (history.length > 1) { history.back(); }
+    else { window.scrollTo({ top: 0, behavior: "smooth" }); }
+  }
+
   function bindGlobal() {
     $("#searchInput").addEventListener("input", function (e) { state.search = e.target.value; renderCards(); });
     $("#sortSelect").addEventListener("change", function (e) { state.sort = e.target.value; renderCards(); });
 
+    // 단일 위임 클릭 핸들러 — 툴바·사이드바·카드 모든 버튼 처리(바인딩 누락 방지)
     document.addEventListener("click", function (e) {
+      var act = e.target.closest("[data-action]");
+      if (act) {
+        e.preventDefault();
+        switch (act.getAttribute("data-action")) {
+          case "font-down": setFont(curFont() - 1); return;
+          case "font-up": setFont(curFont() + 1); return;
+          case "font-reset": setFont(2); return;
+          case "back": smartBack(); return;
+          case "print": window.print(); return;
+          case "expand": toggleExpandAll(act); return;
+          case "menu": document.body.classList.toggle("sb-open"); return;
+          case "top": window.scrollTo({ top: 0, behavior: "smooth" }); return;
+        }
+      }
       var chipEl = e.target.closest(".chip");
       if (chipEl) { state[chipEl.getAttribute("data-group")] = chipEl.getAttribute("data-key"); renderFilters(); renderCards(); return; }
       var route = e.target.closest("[data-route]");
-      if (route) { location.hash = route.getAttribute("data-route"); closeMobileSidebar(); return; }
+      if (route) { e.preventDefault(); location.hash = route.getAttribute("data-route"); closeMobileSidebar(); return; }
       var paperBtn = e.target.closest("[data-paper]");
       if (paperBtn) { gotoPaper(paperBtn.getAttribute("data-paper")); return; }
       var gotoBtn = e.target.closest("[data-goto]");
@@ -342,32 +370,11 @@
       if (printBtn) { e.preventDefault(); printCard(printBtn.getAttribute("data-print")); return; }
       var gh = e.target.closest(".sb-group-head");
       if (gh) { gh.closest(".sb-group").classList.toggle("collapsed"); return; }
+      if (e.target.closest("#sbBackdrop")) { closeMobileSidebar(); return; }
     });
-
-    $("#fontDown").addEventListener("click", function () { setFont(curFont() - 1); });
-    $("#fontUp").addEventListener("click", function () { setFont(curFont() + 1); });
-    $("#fontReset").addEventListener("click", function () { setFont(2); });
-
-    $("#backBtn").addEventListener("click", function () { history.back(); });
-    $("#printBtn").addEventListener("click", function () { window.print(); });
-
-    var allOpen = false;
-    $("#expandAllBtn").addEventListener("click", function () {
-      allOpen = !allOpen;
-      $$(".paper-card").forEach(function (c) {
-        c.classList.toggle("open", allOpen);
-        var h = c.querySelector(".card-head"); if (h) h.setAttribute("aria-expanded", allOpen ? "true" : "false");
-      });
-      this.textContent = allOpen ? "▴ 모두 접기" : "▾ 모두 펼치기";
-    });
-
-    $("#hamburger").addEventListener("click", function () { document.body.classList.toggle("sb-open"); });
-    $("#sbBackdrop").addEventListener("click", closeMobileSidebar);
 
     var toTop = $("#toTop");
     window.addEventListener("scroll", function () { toTop.hidden = window.scrollY < 400; }, { passive: true });
-    toTop.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
-
     window.addEventListener("hashchange", handleHash);
   }
 
