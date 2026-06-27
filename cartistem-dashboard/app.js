@@ -29,6 +29,45 @@
     context: { label: "맥락 의존", cls: "evid-context", order: 5 }
   };
 
+  // 좌측 목차 계층(대주제 → 중주제 → 논문)
+  var TAXONOMY = [
+    { name: "핵심 임상시험", ic: "⭐", subs: [
+      { name: "무작위 대조시험(3상)", ids: ["p1"] },
+      { name: "장기 추적·초기 임상", ids: ["p2", "p15"] }
+    ] },
+    { name: "고위경골절골술(HTO) 병용 — 단일군·코호트", ic: "🦵", subs: [
+      { name: "전향·후향 코호트", ids: ["p5", "p7", "p9", "p19", "p29"] },
+      { name: "증례·소규모 시리즈", ids: ["p21", "p30"] }
+    ] },
+    { name: "HTO 병용 — 비교 연구", ic: "⚖️", subs: [
+      { name: "골수농축물(BMAC) 대조", ids: ["p10", "p11", "p13"] },
+      { name: "미세골절·미세천공 대조", ids: ["p16", "p26", "p27"] }
+    ] },
+    { name: "연골 결손 직접 이식", ic: "🧬", subs: [
+      { name: "골관절염 연골 결손", ids: ["p6", "p24"] },
+      { name: "골연골·특수 병변", ids: ["p3", "p4", "p8", "p18"] }
+    ] },
+    { name: "근거 종합(체계적 고찰·메타분석)", ic: "📚", subs: [
+      { name: "효능·안전성 종합", ids: ["p17", "p25"] },
+      { name: "BMAC 비교 메타분석", ids: ["p23"] }
+    ] },
+    { name: "수술 술기", ic: "🔧", subs: [
+      { name: "건식 관절경 이식 술기", ids: ["p14", "p22"] }
+    ] },
+    { name: "경제성 평가", ic: "💰", subs: [
+      { name: "비용효과 분석", ids: ["p20"] }
+    ] },
+    { name: "방법론·관련 참고", ic: "📐", subs: [
+      { name: "관련 임상연구", ids: ["x_lat"] },
+      { name: "측정·영상 방법론", ids: ["x_mri", "x_meas"] }
+    ] }
+  ];
+  var BYID = {};
+  PAPERS.forEach(function (p) { BYID[p.id] = p; });
+
+  // 글자 크기 단계(px) — html(root) font-size를 직접 바꿔 rem 기반 전체 텍스트를 확대
+  var FONT_PX = { 1: 14, 2: 16, 3: 18, 4: 20, 5: 22 };
+
   var state = { search: "", category: "all", evidence: "all", sort: "num", view: "home" };
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
@@ -86,29 +125,37 @@
       '" data-key="' + key + '">' + esc(label) + '<span class="chip-count">' + count + "</span></button>";
   }
 
-  /* ---------- 좌측 사이드바 ---------- */
+  /* ---------- 좌측 사이드바(대주제→중주제→논문, 기본 접힘) ---------- */
   function renderSidebar() {
     var html = "";
-    html += '<button class="sb-link" data-route="#/home"><span class="ic">🏠</span> 대시보드 홈</button>';
-    html += '<button class="sb-link" data-route="#/sources"><span class="ic">🗂️</span> 논문 모음 (원문 링크·PDF)</button>';
+    html += '<button class="sb-link" data-route="#/home"><span class="ic">🏠</span><span>대시보드 홈</span></button>';
+    html += '<button class="sb-link" data-route="#/sources"><span class="ic">🗂️</span><span>논문 모음 (원문 링크·PDF)</span></button>';
     html += '<div class="sb-divider"></div>';
+    html += '<p class="sb-caption">분류 목차 <span class="sb-hint">클릭하여 펼치기</span></p>';
 
-    var groups = {};
-    PAPERS.forEach(function (p) { (groups[p.category] = groups[p.category] || []).push(p); });
-    Object.keys(CATEGORY).filter(function (k) { return groups[k]; })
-      .sort(function (a, b) { return CATEGORY[a].order - CATEGORY[b].order; })
-      .forEach(function (k) {
-        var items = groups[k].sort(function (a, b) { return numKey(a) - numKey(b); });
-        html += '<div class="sb-group" data-cat="' + k + '">' +
-          '<button class="sb-group-head"><span>' + CATEGORY[k].ic + " " + esc(CATEGORY[k].label) +
-          '</span><span><span class="cnt">' + items.length + '</span><span class="arr">▾</span></span></button>' +
-          '<div class="sb-items">' +
-          items.map(function (p) {
-            return '<button class="sb-item" data-paper="' + p.id + '">' +
+    TAXONOMY.forEach(function (major, mi) {
+      var majorCount = major.subs.reduce(function (n, s) { return n + s.ids.length; }, 0);
+      html += '<div class="sb-acc lvl-major collapsed" data-major="' + mi + '">' +
+        '<button class="sb-acc-head sb-major-head"><span class="arr">▸</span>' +
+        '<span class="ic">' + major.ic + '</span>' +
+        '<span class="sb-acc-name">' + esc(major.name) + '</span>' +
+        '<span class="cnt">' + majorCount + '</span></button>' +
+        '<div class="sb-acc-body">';
+      major.subs.forEach(function (sub, si) {
+        html += '<div class="sb-acc lvl-mid collapsed" data-major="' + mi + '" data-sub="' + si + '">' +
+          '<button class="sb-acc-head sb-mid-head"><span class="arr">▸</span>' +
+          '<span class="sb-acc-name">' + esc(sub.name) + '</span>' +
+          '<span class="cnt">' + sub.ids.length + '</span></button>' +
+          '<div class="sb-acc-body">' +
+          sub.ids.map(function (id) {
+            var p = BYID[id]; if (!p) return "";
+            return '<button class="sb-item" data-paper="' + id + '">' +
               '<span class="n">' + esc(p.num) + '</span>' +
               '<span class="t">' + esc(p.journal) + " " + esc(p.year) + "</span></button>";
-          }).join("") + "</div></div>";
+          }).join("") + '</div></div>';
       });
+      html += '</div></div>';
+    });
     $("#sbNav").innerHTML = html;
   }
 
@@ -242,6 +289,7 @@
 
   /* ---------- 뷰 전환 ---------- */
   function showView(view) {
+    clearPrintState();
     state.view = view;
     $("#view-home").hidden = view !== "home";
     $("#view-sources").hidden = view !== "sources";
@@ -267,11 +315,19 @@
     card.scrollIntoView({ behavior: "smooth", block: "start" });
     card.classList.remove("flash"); void card.offsetWidth; card.classList.add("flash");
     setActiveSidebarItem(id);
+    expandToItem(id);
     closeMobileSidebar();
     if (!fromHash) location.hash = "#/paper/" + id;
   }
   function setActiveSidebarItem(id) {
     $$(".sb-item").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-paper") === id); });
+  }
+  // 해당 논문이 속한 대주제·중주제 아코디언을 펼쳐 목차에서 보이게 함
+  function expandToItem(id) {
+    var item = document.querySelector('.sb-item[data-paper="' + id + '"]');
+    if (!item) return;
+    var acc = item.closest(".sb-acc");
+    while (acc) { acc.classList.remove("collapsed"); acc = acc.parentElement && acc.parentElement.closest(".sb-acc"); }
   }
 
   /* ---------- 스크롤 스파이 ---------- */
@@ -295,25 +351,40 @@
     showView("home");
   }
 
-  /* ---------- 글자 크기 ---------- */
+  /* ---------- 글자 크기 (root font-size 직접 조정 → rem 전체 확대) ---------- */
   function setFont(scale) {
     scale = Math.max(1, Math.min(5, scale));
+    document.documentElement.style.fontSize = FONT_PX[scale] + "px";
     document.body.setAttribute("data-fontscale", scale);
+    $$(".tb-group [data-action]").forEach(function (b) {
+      var a = b.getAttribute("data-action");
+      var on = (a === "font-down" && scale === 1) || (a === "font-up" && scale === 5) || (a === "font-reset" && scale === 2);
+      b.classList.toggle("cur", on);
+    });
     try { localStorage.setItem("cartistem-fontscale", scale); } catch (e) {}
   }
   function curFont() { return parseInt(document.body.getAttribute("data-fontscale"), 10) || 2; }
 
-  /* ---------- 단일 카드 요약 PDF 출력 ---------- */
+  /* ---------- 단일 카드 요약 PDF 출력 (인쇄 후 상태 확실히 복구) ---------- */
+  function clearPrintState() {
+    document.body.classList.remove("print-one");
+    $$(".paper-card.print-target").forEach(function (c) { c.classList.remove("print-target"); });
+  }
   function printCard(id) {
     var card = $("#card-" + id);
     if (!card) return;
-    if (!card.classList.contains("open")) card.classList.add("open");
-    $$(".paper-card").forEach(function (c) { c.classList.remove("print-target"); });
+    card.classList.add("open");
+    var h = card.querySelector(".card-head"); if (h) h.setAttribute("aria-expanded", "true");
+    clearPrintState();
     card.classList.add("print-target");
     document.body.classList.add("print-one");
-    var cleanup = function () { document.body.classList.remove("print-one"); card.classList.remove("print-target"); window.removeEventListener("afterprint", cleanup); };
-    window.addEventListener("afterprint", cleanup);
-    setTimeout(function () { window.print(); }, 60);
+    var done = false;
+    function cleanup() { if (done) return; done = true; clearPrintState(); }
+    // 다중 안전장치: afterprint, 창 포커스 복귀, 마지막 타임아웃
+    window.addEventListener("afterprint", cleanup, { once: true });
+    window.addEventListener("focus", function f() { window.removeEventListener("focus", f); setTimeout(cleanup, 50); }, { once: true });
+    setTimeout(cleanup, 8000);
+    setTimeout(function () { window.print(); }, 80);
   }
 
   /* ---------- 모바일 사이드바 ---------- */
@@ -331,11 +402,11 @@
     if (btn) btn.textContent = allOpen ? "▴ 모두 접기" : "▾ 모두 펼치기";
   }
   function smartBack() {
-    // 앱 내부 상태(논문/논문모음)면 홈으로, 아니면 브라우저 뒤로
+    // 인쇄 상태 잔여 제거 후, 앱 내부에서만 이동(페이지 밖으로 나가지 않음)
+    clearPrintState();
     var h = location.hash || "";
     if (h.indexOf("#/paper/") === 0 || h.indexOf("#/sources") === 0) { location.hash = "#/home"; }
-    else if (history.length > 1) { history.back(); }
-    else { window.scrollTo({ top: 0, behavior: "smooth" }); }
+    else { showView("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }
   }
 
   function bindGlobal() {
@@ -368,8 +439,8 @@
       if (gotoBtn) { gotoPaper(gotoBtn.getAttribute("data-goto")); return; }
       var printBtn = e.target.closest("[data-print]");
       if (printBtn) { e.preventDefault(); printCard(printBtn.getAttribute("data-print")); return; }
-      var gh = e.target.closest(".sb-group-head");
-      if (gh) { gh.closest(".sb-group").classList.toggle("collapsed"); return; }
+      var gh = e.target.closest(".sb-acc-head");
+      if (gh) { gh.closest(".sb-acc").classList.toggle("collapsed"); return; }
       if (e.target.closest("#sbBackdrop")) { closeMobileSidebar(); return; }
     });
 
@@ -381,7 +452,9 @@
   /* ---------- init ---------- */
   document.addEventListener("DOMContentLoaded", function () {
     if (!PAPERS.length) { $("#cardList").innerHTML = "<p class='empty-state'>데이터를 불러오지 못했습니다.</p>"; return; }
-    try { var fs = localStorage.getItem("cartistem-fontscale"); if (fs) setFont(parseInt(fs, 10)); } catch (e) {}
+    var savedFs = 2;
+    try { var fs = localStorage.getItem("cartistem-fontscale"); if (fs) savedFs = parseInt(fs, 10); } catch (e) {}
+    setFont(savedFs);
     renderIntro(); renderSynthesis(); renderStats(); renderFilters(); renderSidebar();
     renderSourcesView(); bindGlobal(); renderCards();
     handleHash();
