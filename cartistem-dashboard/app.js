@@ -160,13 +160,17 @@
   }
 
   /* ---------- 표 렌더 ---------- */
+  // PDF 다운로드 파일명(가독성) — 예: "[1] The American Journal of Sports Medicine 2021.pdf"
+  function pdfFileName(p) {
+    return ("[" + p.num + "] " + p.journal + " " + p.year + ".pdf").replace(/[\\/:*?"<>|]/g, " ");
+  }
   function sourceButtons(p) {
     var s = SOURCES[p.id] || {};
     var btns = [];
     if (s.pmid) btns.push('<a class="act-btn act-pubmed" target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/' + esc(s.pmid) + '/">🔗 PubMed</a>');
     if (s.doi) btns.push('<a class="act-btn act-doi" target="_blank" rel="noopener" href="https://doi.org/' + esc(s.doi) + '">🌐 출판사 원문</a>');
     var ph = pdfHref(p);
-    if (ph) btns.push('<a class="act-btn act-pdf" target="_blank" rel="noopener" href="' + ph + '">📄 PDF 원문</a>');
+    if (ph) btns.push('<a class="act-btn act-pdf" download="' + esc(pdfFileName(p)) + '" href="' + ph + '">📄 PDF 다운로드</a>');
     btns.push('<button class="act-btn act-summary" data-print="' + p.id + '">🖨 요약 PDF 출력</button>');
     return '<div class="card-actions">' + btns.join("") + "</div>";
   }
@@ -232,7 +236,7 @@
       if (s.pmid) links.push('<a class="act-btn act-pubmed" target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/' + esc(s.pmid) + '/">PubMed</a>');
       if (s.doi) links.push('<a class="act-btn act-doi" target="_blank" rel="noopener" href="https://doi.org/' + esc(s.doi) + '">DOI 원문</a>');
       var ph = pdfHref(p);
-      if (ph) links.push('<a class="act-btn act-pdf" target="_blank" rel="noopener" href="' + ph + '">PDF</a>');
+      if (ph) links.push('<a class="act-btn act-pdf" download="' + esc(pdfFileName(p)) + '" href="' + ph + '">📄 PDF 다운로드</a>');
       if (!links.length) links.push('<span class="unreported">링크 미확인</span>');
       return "<tr><td class='s-num'>" + esc(p.num) + "</td>" +
         "<td><div class='s-title'>" + esc(p.title) + "</div><div class='s-jour'>" + esc(p.authors) + "</div></td>" +

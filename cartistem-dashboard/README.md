@@ -10,7 +10,8 @@
 ## 빠른 사용
 
 - **바로 열기**: `cartistem-dashboard.html`(자체 완결형 단일 파일)을 더블클릭 → 어디서나 동작.
-  다운로드해서 USB·오프라인에서도 그대로 사용할 수 있습니다(공개 링크가 없는 논문 PDF까지 내장).
+  `cartistem-dashboard.html`과 `pdfs/` 폴더를 함께 두면(배포용 ZIP) USB·오프라인에서도
+  31편 PDF 원문을 그대로 내려받을 수 있습니다.
 - **개발용(분리 파일)**: `index.html`을 브라우저로 열거나 `python3 -m http.server`로 서빙.
 
 ```bash
@@ -26,8 +27,8 @@ cd cartistem-dashboard && python3 -m http.server 8080   # http://localhost:8080
 | # | 기능 | 설명 |
 |---|---|---|
 | 1 | **좌측 분류 목차(3단계 계층)** | 대주제 → 중주제 → 논문 순서의 아코디언. 기본은 모두 접힌 상태이며, 대주제를 누르면 중주제가, 중주제를 누르면 논문이 펼쳐짐. 논문 클릭 시 해당 카드로 이동·강조하고 소속 대·중주제를 자동으로 펼침. 스크롤 위치에 따라 현재 논문 하이라이트 |
-| 2 | **논문 모음(원문 링크·PDF)** | 별도 뷰에서 전 논문을 표로 정리. 링크 가능 논문은 **PubMed/출판사 원문(DOI)** 으로 접속, 공개 링크가 없는 논문은 **PDF** 첨부 |
-| 3 | **다운로드용 단일 HTML** | `build.js`가 CSS·JS·데이터·PDF를 인라인화한 `cartistem-dashboard.html` 생성(자체 완결형) |
+| 2 | **논문 모음(원문 링크·PDF)** | 별도 뷰에서 전 논문을 표로 정리. 연결 가능 논문은 **PubMed/출판사 원문(DOI)** 으로 접속하고, **모든 논문(31편)에 PDF 원문을 첨부**하여 유료·미연결 논문도 대시보드에서 바로 내려받을 수 있음 |
+| 3 | **다운로드용 단일 HTML** | `build.js`가 CSS·JS·데이터를 인라인화한 `cartistem-dashboard.html` 생성. PDF(약 60MB)는 용량상 내장하지 않고 `pdfs/` 폴더를 상대경로로 참조 → 배포는 `HTML + pdfs/`를 ZIP으로 함께 제공 |
 | 4 | **프리미엄 디자인** | 클리니컬 그린 테마, 세리프 디스플레이 타이포, 좌측 다크 사이드바, 카드형 표 5종 |
 | 5 | **글자 크기 조절** | 툴바의 `A− / A / A＋` 5단계, 선택값 `localStorage` 저장 |
 | 6 | **원활한 앱 UX** | 해시 라우팅 기반 **브라우저 뒤로/앞으로** 지원, 툴바 `← 뒤로`, 우측 하단 `↑ 맨 위로`, 모바일 햄버거 메뉴 |
@@ -43,8 +44,8 @@ cd cartistem-dashboard && python3 -m http.server 8080   # http://localhost:8080
 | `data.js` | 논문 31편 데이터(표 A~E, 원문 수치 그대로 전사) |
 | `sources.js` | 논문별 원문 연결(PMID·DOI·PDF) — 원문에서 추출한 값 |
 | `build.js` | 단일 HTML 빌드 스크립트 (`node build.js`) |
-| `cartistem-dashboard.html` | **빌드 산출물** — 다운로드용 자체 완결형 단일 HTML |
-| `pdfs/` | 공개 링크가 없는 논문의 첨부 PDF(현재 P1) |
+| `cartistem-dashboard.html` | **빌드 산출물** — 단일 HTML(코드·데이터 내장, PDF는 `pdfs/` 참조) |
+| `pdfs/` | **전 논문(31편) PDF 원문** — `pdfs/p1.pdf … x_meas.pdf` |
 
 ## 출력 포맷 — 표 5종 (위계 규칙)
 
