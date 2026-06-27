@@ -7,77 +7,105 @@
   <meta name="description" content="동종 제대혈 유래 중간엽 줄기세포(CARTISTEM) 무릎 연골 재생 논문의 표 중심 핵심 메시지 요약 대시보드" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <header class="site-header">
-    <div class="wrap">
-      <div class="brand">
-        <span class="brand-mark">CARTISTEM</span>
-        <span class="brand-sub">논문 핵심 메시지 대시보드</span>
-      </div>
-      <p class="brand-tagline">
-        동종 제대혈 유래 중간엽 줄기세포(hUCB-MSC) 무릎 연골 재생 연구 ·
-        표 중심 · 사실 기반 요약(표 A~E)
-      </p>
-      <div class="header-actions">
-        <button id="printBtn" class="btn-ghost" type="button">🖨 인쇄 / PDF 저장</button>
-        <button id="expandAllBtn" class="btn-ghost" type="button">▾ 모두 펼치기</button>
-      </div>
+<body data-fontscale="2">
+  <!-- ===== 상단 툴바 ===== -->
+  <header class="toolbar" id="toolbar">
+    <button class="hamburger" id="hamburger" type="button" aria-label="목록 열기">☰</button>
+    <a class="tb-brand" href="#/home">
+      <span class="tb-mark">CARTISTEM</span>
+      <span class="tb-sub">논문 대시보드</span>
+    </a>
+    <div class="tb-spacer"></div>
+    <div class="tb-group" role="group" aria-label="글자 크기">
+      <span class="tb-label">글자</span>
+      <button class="tb-btn" id="fontDown" type="button" aria-label="글자 작게">A−</button>
+      <button class="tb-btn" id="fontReset" type="button" aria-label="기본 크기">A</button>
+      <button class="tb-btn" id="fontUp" type="button" aria-label="글자 크게">A＋</button>
     </div>
+    <button class="tb-btn tb-nav" id="backBtn" type="button" title="뒤로">← 뒤로</button>
+    <button class="tb-btn" id="expandAllBtn" type="button">▾ 모두 펼치기</button>
+    <button class="tb-btn tb-accent" id="printBtn" type="button">🖨 전체 인쇄</button>
   </header>
 
-  <main class="wrap">
-    <!-- 제품 / 코퍼스 개요 -->
-    <section class="panel intro-panel" id="introPanel"></section>
-
-    <!-- 코퍼스 종합 메시지 (위계 규칙: 핵심 메시지 우선) -->
-    <section class="panel synthesis-panel">
-      <h2 class="panel-title"><span class="kicker">핵심 우선</span> 코퍼스 종합 메시지</h2>
-      <ol class="synthesis-list" id="synthesisList"></ol>
-      <p class="disclaimer">
-        ※ 모든 수치·통계량은 원문(초록·결과·고찰)에 기재된 값을 그대로 전사하였습니다.
-        통계적 유의성과 임상적 의미는 구분하며, 연구 표본·설계 범위를 넘어선 일반화는 하지 않습니다.
-        정보 부재 항목은 <em>원문 미보고</em>로 표기합니다.
-      </p>
-    </section>
-
-    <!-- 요약 통계 -->
-    <section class="stats-grid" id="statsGrid"></section>
-
-    <!-- 컨트롤 -->
-    <section class="controls" id="controls">
-      <div class="search-box">
-        <input type="search" id="searchInput" placeholder="제목·저자·저널·결과 키워드 검색…" />
+  <div class="layout">
+    <!-- ===== 좌측 분류 네비게이션 ===== -->
+    <aside class="sidebar" id="sidebar" aria-label="논문 분류 탐색">
+      <div class="sb-scroll">
+        <nav class="sb-nav" id="sbNav"></nav>
       </div>
-      <div class="filter-row" id="categoryFilters"></div>
-      <div class="filter-row" id="evidenceFilters"></div>
-      <div class="sort-row">
-        <label for="sortSelect">정렬</label>
-        <select id="sortSelect">
-          <option value="num">논문 번호순</option>
-          <option value="yearDesc">최신 연도순</option>
-          <option value="yearAsc">오래된 연도순</option>
-          <option value="evidence">근거 수준순</option>
-        </select>
-        <span class="result-count" id="resultCount"></span>
-      </div>
-    </section>
+    </aside>
+    <div class="sb-backdrop" id="sbBackdrop"></div>
 
-    <!-- 논문 카드 목록 -->
-    <section id="cardList" class="card-list"></section>
+    <!-- ===== 본문 ===== -->
+    <main class="content" id="content">
+      <!-- 홈(대시보드) 뷰 -->
+      <section class="view" id="view-home">
+        <section class="panel intro-panel" id="introPanel"></section>
 
-    <p class="empty-state" id="emptyState" hidden>조건에 맞는 논문이 없습니다.</p>
-  </main>
+        <section class="panel synthesis-panel">
+          <h2 class="panel-title"><span class="kicker">핵심 우선</span> 코퍼스 종합 메시지</h2>
+          <ol class="synthesis-list" id="synthesisList"></ol>
+          <p class="disclaimer">
+            ※ 모든 수치·통계량은 원문(초록·결과·고찰)에 기재된 값을 그대로 전사하였습니다.
+            통계적 유의성과 임상적 의미는 구분하며, 연구 표본·설계 범위를 넘어선 일반화는 하지 않습니다.
+            정보 부재 항목은 <em>원문 미보고</em>로 표기합니다.
+          </p>
+        </section>
+
+        <section class="stats-grid" id="statsGrid"></section>
+
+        <section class="controls" id="controls">
+          <div class="search-box">
+            <input type="search" id="searchInput" placeholder="제목·저자·저널·결과 키워드 검색…" />
+          </div>
+          <div class="filter-row" id="categoryFilters"></div>
+          <div class="filter-row" id="evidenceFilters"></div>
+          <div class="sort-row">
+            <label for="sortSelect">정렬</label>
+            <select id="sortSelect">
+              <option value="num">논문 번호순</option>
+              <option value="yearDesc">최신 연도순</option>
+              <option value="yearAsc">오래된 연도순</option>
+              <option value="evidence">근거 수준순</option>
+            </select>
+            <span class="result-count" id="resultCount"></span>
+          </div>
+        </section>
+
+        <section id="cardList" class="card-list"></section>
+        <p class="empty-state" id="emptyState" hidden>조건에 맞는 논문이 없습니다.</p>
+      </section>
+
+      <!-- 논문 모음(원문 링크/PDF) 뷰 -->
+      <section class="view" id="view-sources" hidden>
+        <section class="panel">
+          <h2 class="panel-title"><span class="kicker">논문 모음</span> 원문 보기 · 링크 / PDF</h2>
+          <p class="src-intro">
+            링크 연결이 가능한 논문은 <b>PubMed</b> 또는 <b>출판사 원문(DOI)</b>으로 접속할 수 있으며,
+            공개 링크가 없는 논문은 <b>PDF</b>로 첨부했습니다. 각 행의 “요약 보기”로 해당 논문 카드로 이동합니다.
+          </p>
+          <div class="src-table-wrap">
+            <table class="src-table" id="sourcesTable"></table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- 위로 가기 -->
+  <button class="to-top" id="toTop" type="button" aria-label="맨 위로" hidden>↑</button>
 
   <footer class="site-footer">
-    <div class="wrap">
+    <div class="footer-inner">
       <p>
-        CARTISTEM 논문 전용 대시보드 · 표 A(식별) · B(개요) · C(정량 결과) · D(핵심 메시지) · E(한계·후속).
-        본 대시보드는 학술적·중립적 요약 도구이며, 홍보·권유 목적의 표현을 포함하지 않습니다.
+        CARTISTEM 논문 전용 대시보드 · 표 A(식별)·B(개요)·C(정량 결과)·D(핵심 메시지)·E(한계·후속).
+        학술적·중립적 요약 도구이며 홍보·권유성 표현을 포함하지 않습니다.
       </p>
     </div>
   </footer>
 
   <script src="data.js"></script>
+  <script src="sources.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
