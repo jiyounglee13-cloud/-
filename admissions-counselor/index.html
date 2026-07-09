@@ -128,6 +128,9 @@
   .subGroupTitle { font-size: 0.9rem; font-weight: 700; margin: 16px 0 8px; }
   .subGroupTitle.naesinT { color: var(--susi); }
   .subGroupTitle.suneungT { color: var(--jungsi); }
+  .semBlock { border: 1px solid #bfe3de; background: #f6fbfa; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .semBlock .semTitle { font-size: 0.85rem; font-weight: 700; color: var(--susi); margin-bottom: 8px; }
+  .naesinAvg { margin-top: 4px; font-size: 0.85rem; background: var(--susi-bg); color: var(--susi); border-radius: 8px; padding: 8px 12px; font-weight: 600; }
 
   footer { text-align: center; font-size: 0.78rem; color: var(--sub); margin-top: 30px; }
   footer a { color: var(--accent); }
@@ -192,15 +195,10 @@
       </div>
     </div>
 
-    <div class="subGroupTitle naesinT">📗 내신 — 과목별 등급 (5등급제, 1.0~5.0)</div>
-    <div class="grid">
-      <div><label for="n_국어">국어</label><input type="number" id="n_국어" min="1" max="5" step="0.1" value="2.0"></div>
-      <div><label for="n_수학">수학</label><input type="number" id="n_수학" min="1" max="5" step="0.1" value="2.0"></div>
-      <div><label for="n_영어">영어</label><input type="number" id="n_영어" min="1" max="5" step="0.1" value="2.0"></div>
-      <div><label for="n_사회">사회(통합사회)</label><input type="number" id="n_사회" min="1" max="5" step="0.1" value="2.0"></div>
-      <div><label for="n_과학">과학(통합과학)</label><input type="number" id="n_과학" min="1" max="5" step="0.1" value="2.0"></div>
-    </div>
-    <div class="hint">같은 과목을 여러 학기 들었다면 평균 등급을 입력하세요. 대학마다 반영 교과·과목 수가 달라, 대학별 '반영 내신'은 자동으로 따로 계산됩니다.</div>
+    <div class="subGroupTitle naesinT">📗 내신 — 학기별 · 과목별 등급 (5등급제, 1.0~5.0)</div>
+    <div id="naesinSemesters"></div>
+    <div class="naesinAvg" id="naesinAvgLine"></div>
+    <div class="hint">위에서 선택한 '이수한 내신 학기'에 맞춰 학기별 입력칸이 자동으로 생깁니다. 성적표의 과목 등급을 학기별로 그대로 적으면 <b>과목별 평균은 자동 계산</b>됩니다. 대학마다 반영 교과·과목 수가 달라, 대학별 '반영 내신'도 자동으로 따로 계산됩니다.</div>
 
     <div class="subGroupTitle suneungT">📘 수능 모의고사 — 백분위 (9등급제)</div>
     <div class="grid">

@@ -485,6 +485,71 @@ function buildRoadmap(input) {
 // ---------------------------------------------------------------------
 function $(id) { return document.getElementById(id); }
 
+const SEMESTER_LABELS = ["고1 1학기", "고1 2학기", "고2 1학기", "고2 2학기", "고3 1학기"];
+
+// 학기 선택에 맞춰 학기별 내신 입력칸 생성 (기존 입력값 보존)
+function renderNaesinInputs() {
+  const count = parseInt($("semester").value, 10);
+  const box = $("naesinSemesters");
+  // 기존 값 보존
+  const saved = {};
+  box.querySelectorAll("input").forEach((el) => { saved[el.id] = el.value; });
+
+  const blocks = [];
+  if (count === 0) {
+    blocks.push({ idx: 0, title: "예비 고1 — 목표(예상) 내신으로 시뮬레이션" });
+  } else {
+    for (let i = 0; i < count; i++) blocks.push({ idx: i, title: `${SEMESTER_LABELS[i]} 성적표` });
+  }
+  box.innerHTML = blocks.map((b) => `
+    <div class="semBlock">
+      <div class="semTitle">📄 ${b.title}</div>
+      <div class="grid">
+        ${NAESIN_SUBJECTS.map((s) => `
+        <div>
+          <label for="n_${b.idx}_${s}">${s}${s === "사회" ? "(통합사회)" : s === "과학" ? "(통합과학)" : ""}</label>
+          <input type="number" id="n_${b.idx}_${s}" min="1" max="5" step="0.1"
+                 value="${saved[`n_${b.idx}_${s}`] ?? "2.0"}">
+        </div>`).join("")}
+      </div>
+    </div>`).join("");
+  updateNaesinAvgLine();
+}
+
+// 학기별 입력 → 과목별 평균 (자동 계산)
+function collectNaesin() {
+  const rawCount = parseInt($("semester").value, 10);
+  const count = Math.max(1, rawCount); // 예비 고1은 목표 1개 블록
+  const naesin = {};
+  const perSemErrors = [];
+  for (const s of NAESIN_SUBJECTS) {
+    let sum = 0, n = 0;
+    for (let i = 0; i < count; i++) {
+      const el = $(`n_${i}_${s}`);
+      if (!el) continue;
+      const v = parseFloat(el.value);
+      if (!(v >= 1 && v <= 5)) {
+        const semLabel = rawCount === 0 ? "목표 내신" : SEMESTER_LABELS[i];
+        perSemErrors.push(`${semLabel} ${s} 등급은 1.0~5.0(5등급제) 사이로 입력하세요.`);
+        continue;
+      }
+      sum += v; n++;
+    }
+    naesin[s] = n ? +(sum / n).toFixed(2) : NaN;
+  }
+  return { naesin, perSemErrors };
+}
+
+function updateNaesinAvgLine() {
+  const { naesin } = collectNaesin();
+  const line = $("naesinAvgLine");
+  if (!line) return;
+  const parts = NAESIN_SUBJECTS.map((s) => `${s} ${isNaN(naesin[s]) ? "-" : naesin[s]}`);
+  const all = NAESIN_SUBJECTS.map((s) => naesin[s]).filter((v) => !isNaN(v));
+  const avg = all.length ? (all.reduce((a, b) => a + b, 0) / all.length).toFixed(2) : "-";
+  line.innerHTML = `🧮 자동 계산된 과목별 평균 — ${parts.join(" · ")} <span style="float:right">전과목 ${avg}등급</span>`;
+}
+
 function rebuildDeptOptions() {
   const sel = $("dept");
   const prev = sel.value;
@@ -499,8 +564,7 @@ function rebuildDeptOptions() {
 
 function readInput() {
   const num = (id) => parseFloat($(id).value);
-  const naesin = {};
-  for (const s of NAESIN_SUBJECTS) naesin[s] = num("n_" + s);
+  const { naesin, perSemErrors } = collectNaesin();
   const input = {
     dept: $("dept").value || null,
     completedSemesters: parseInt($("semester").value, 10),
@@ -511,9 +575,9 @@ function readInput() {
     tamgu1: num("tamgu1"),
     tamgu2: num("tamgu2"),
   };
-  const errors = [];
+  const errors = [...perSemErrors];
   for (const s of NAESIN_SUBJECTS) {
-    if (!(naesin[s] >= 1 && naesin[s] <= 5)) errors.push(`${s} 내신 등급은 1.0~5.0(5등급제) 사이로 입력하세요.`);
+    if (isNaN(naesin[s])) errors.push(`${s} 내신 등급을 입력하세요 (1.0~5.0, 5등급제).`);
   }
   for (const [k, label] of [["korean", "국어"], ["math", "수학"], ["tamgu1", "통합사회"], ["tamgu2", "통합과학"]]) {
     if (!(input[k] >= 0 && input[k] <= 100)) errors.push(`${label} 백분위는 0~100 사이로 입력하세요.`);
@@ -738,6 +802,9 @@ document.addEventListener("DOMContentLoaded", () => {
   $("sources").innerHTML = ADMISSIONS_DATA.sources
     .map((s) => `<a href="${s.url}" target="_blank" rel="noopener">${s.name}</a>`).join(" · ");
   rebuildDeptOptions();
+  renderNaesinInputs();
+  $("semester").addEventListener("change", renderNaesinInputs);
+  $("naesinSemesters").addEventListener("input", updateNaesinAvgLine);
   $("btnList").addEventListener("click", renderDashboard);
   $("btnCoach").addEventListener("click", renderCoaching);
 });
