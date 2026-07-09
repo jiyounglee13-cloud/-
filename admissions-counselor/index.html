@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>대입 전략 상담 — 나의 성적으로 갈 수 있는 대학 찾기</title>
+<title>이과 대입 전략 상담 — 내 성적으로 갈 수 있는 대학 찾기</title>
 <style>
   :root {
     --bg: #f4f6fb; --card: #ffffff; --ink: #1c2333; --sub: #5b6478;
@@ -83,6 +83,10 @@
   .deptTable { margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
   .deptTable table { margin-top: 8px; }
   tr.spRow td { background: #fdf7ef; }
+  .avgTxt { color: var(--sub); font-weight: 400; }
+  .weightTips { background: #f0f7f2; border: 1px solid #cfe8d8; border-radius: 10px; padding: 14px; margin-top: 14px; }
+  .weightTips ul { padding-left: 20px; font-size: 0.9rem; }
+  .weightTips li { margin-top: 6px; }
   footer { text-align: center; font-size: 0.78rem; color: var(--sub); margin-top: 30px; }
   footer a { color: var(--accent); }
   @media (max-width: 560px) { .grid { grid-template-columns: 1fr 1fr; } }
@@ -91,8 +95,8 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>🎓 대입 전략 상담 프로그램</h1>
-    <p>현재 성적을 입력하면 지원 가능 대학과 목표 대학 맞춤 코칭을 제공합니다</p>
+    <h1>🎓 이과 대입 전략 상담 프로그램</h1>
+    <p>자연계열(이과) · 내신 상위 1~3등급 · 고1 학생 전용 — 성적을 입력하면 지원 가능 대학과 학과별 맞춤 코칭을 제공합니다</p>
     <span class="badge" id="dataVersion"></span>
   </header>
 
@@ -101,22 +105,15 @@
     <h2>1️⃣ 내 정보 · 성적 입력</h2>
     <div class="grid">
       <div>
-        <label for="track">지망 계열</label>
-        <select id="track">
-          <option value="인문">인문·사회</option>
-          <option value="자연">자연·공학</option>
-        </select>
-      </div>
-      <div>
-        <label for="dept">희망 학과</label>
+        <label for="dept">희망 학과 (자연계열)</label>
         <select id="dept"></select>
-        <div class="hint">선택 시 학과별 컷으로 판정</div>
+        <div class="hint">선택 시 학과별 컷 + 가중치 팁 제공</div>
       </div>
       <div>
         <label for="semester">이수한 내신 학기</label>
         <select id="semester">
           <option value="0">예비 고1 (아직 없음)</option>
-          <option value="1">고1 1학기까지</option>
+          <option value="1" selected>고1 1학기까지</option>
           <option value="2">고1 2학기까지</option>
           <option value="3">고2 1학기까지</option>
           <option value="4">고2 2학기까지</option>
@@ -125,8 +122,8 @@
       </div>
       <div>
         <label for="naesin">내신 평균 등급</label>
-        <input type="number" id="naesin" min="1" max="9" step="0.01" value="3.0">
-        <div class="hint">예비 고1은 목표 등급 입력</div>
+        <input type="number" id="naesin" min="1" max="9" step="0.01" value="2.0">
+        <div class="hint">상위 1~3등급 기준 설계</div>
       </div>
     </div>
     <h2 style="margin-top:18px">모의고사 · 수능 성적 (백분위)</h2>

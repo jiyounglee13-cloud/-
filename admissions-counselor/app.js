@@ -27,6 +27,41 @@ const NAESIN_BANDS = [
 
 const BAND_ORDER = { safe: 0, fit: 1, reach: 2, challenge: 3 };
 
+// 이 앱은 이과(자연계열) 전용입니다
+const TRACK = "자연";
+
+// 70%컷 ↔ 합격자 평균 표기 (data.js의 avgDelta 참고치 사용)
+function jungsiAvgOf(cut70) {
+  return cut70 == null ? null : +Math.min(100, cut70 + ADMISSIONS_DATA.avgDelta.jungsi).toFixed(1);
+}
+function naesinAvgOf(cut70) {
+  return cut70 == null ? null : +Math.max(1.0, cut70 - ADMISSIONS_DATA.avgDelta.naesin).toFixed(2);
+}
+function fmtJungsi(cut70) {
+  if (cut70 == null) return "-";
+  return `<b>${cut70}</b> <small class="avgTxt">(평균 ${jungsiAvgOf(cut70)})</small>`;
+}
+function fmtNaesin(cut70) {
+  if (cut70 == null) return "-";
+  return `<b>${cut70}등급</b> <small class="avgTxt">(평균 ${naesinAvgOf(cut70)})</small>`;
+}
+
+// 이과 공통 가중치 팁 (학과 미선택 시)
+const GENERAL_SCIENCE_TIPS = [
+  "자연계열 정시는 대부분 <b>수학 30~40% + 과탐 25~30%</b>로 반영합니다. 같은 1점이라도 수학·과탐이 국어보다 당락에 크게 작용합니다.",
+  "상위권 대학 다수가 수학 <b>미적분/기하</b>, 탐구 <b>과탐 2과목</b> 응시를 지정하거나 가산합니다. 선택과목을 정할 때 반드시 확인하세요.",
+  "학생부종합에서는 <b>물리·화학·생명 중 지망 학과와 맞는 과목의 Ⅱ(심화) 이수</b> 여부가 전공적합성의 핵심 지표입니다.",
+];
+
+function deptTipsOf(deptId) {
+  if (!deptId) return null;
+  const sp = SPECIAL_DEPTS.find((s) => s.id === deptId);
+  if (sp) return { name: sp.name, tips: sp.tips || [] };
+  const d = (DEPARTMENTS[TRACK] || []).find((x) => x.id === deptId);
+  if (d) return { name: d.name, tips: d.tips || [] };
+  return null;
+}
+
 // 영어 절대평가 등급별 정시 체감 보정(백분위 환산 참고치)
 function englishAdvice(grade) {
   if (grade <= 1) return null;
@@ -193,7 +228,7 @@ function buildCoaching(uni, input) {
     const gap = cut.jungsi - input.jungsiAvg;
     const route = {
       name: "정시 (수능 위주)",
-      cutText: `국·수·탐 평균 백분위 약 ${cut.jungsi} 필요 (추정)`,
+      cutText: `국·수·탐 평균 백분위 70%컷 약 ${cut.jungsi} · 합격자 평균 약 ${jungsiAvgOf(cut.jungsi)} (추정)`,
       myText: `내 평균 백분위 ${input.jungsiAvg.toFixed(1)}`,
       band,
       tips: [],
@@ -225,7 +260,7 @@ function buildCoaching(uni, input) {
     const band = classifyNaesin(input.naesin, cut.gyogwa);
     const route = {
       name: "수시 학생부교과",
-      cutText: `내신 약 ${cut.gyogwa}등급 필요 (추정)`,
+      cutText: `내신 70%컷 약 ${cut.gyogwa}등급 · 합격자 평균 약 ${naesinAvgOf(cut.gyogwa)}등급 (추정)`,
       myText: `내 내신 평균 ${input.naesin}등급`,
       band,
       tips: [],
@@ -302,6 +337,12 @@ function buildCoaching(uni, input) {
 
   // ---- 학년별 로드맵 ----
   result.roadmap = buildRoadmap(input);
+
+  // ---- 가중치 확보 팁 (학과별) ----
+  const dt = deptTipsOf(input.dept);
+  result.weightTips = dt && dt.tips.length
+    ? { title: `💪 ${dt.name} 지원 가중치 확보 팁`, items: dt.tips }
+    : { title: "💪 이과생 공통 가중치 팁 (희망 학과를 선택하면 학과별 팁이 나옵니다)", items: GENERAL_SCIENCE_TIPS };
   return result;
 }
 
@@ -349,17 +390,14 @@ function buildRoadmap(input) {
 function $(id) { return document.getElementById(id); }
 
 function rebuildDeptOptions() {
-  const track = $("track").value;
   const sel = $("dept");
   const prev = sel.value;
-  let html = `<option value="">계열 전체 (평균 기준)</option>`;
-  if (track === "자연") {
-    html += `<optgroup label="의약학 계열 (보유 대학만 비교)">` +
-      SPECIAL_DEPTS.map((s) => `<option value="${s.id}">${s.name}</option>`).join("") +
-      `</optgroup>`;
-  }
-  html += `<optgroup label="일반 학과">` +
-    (DEPARTMENTS[track] || []).map((d) => `<option value="${d.id}">${d.name}</option>`).join("") +
+  let html = `<option value="">자연계열 전체 (평균 기준)</option>`;
+  html += `<optgroup label="의약학 계열 (보유 대학만 비교)">` +
+    SPECIAL_DEPTS.map((s) => `<option value="${s.id}">${s.name}</option>`).join("") +
+    `</optgroup>`;
+  html += `<optgroup label="공학·자연 학과">` +
+    (DEPARTMENTS[TRACK] || []).map((d) => `<option value="${d.id}">${d.name}</option>`).join("") +
     `</optgroup>`;
   sel.innerHTML = html;
   if ([...sel.options].some((o) => o.value === prev)) sel.value = prev;
@@ -368,7 +406,7 @@ function rebuildDeptOptions() {
 function readInput() {
   const num = (id) => parseFloat($(id).value);
   const input = {
-    track: $("track").value,
+    track: TRACK,
     dept: $("dept").value || null,
     completedSemesters: parseInt($("semester").value, 10),
     naesin: num("naesin"),
@@ -411,6 +449,8 @@ function renderList() {
 
   const rows = buildUniversityList(input);
   const deptLabel = deptLabelOf(input);
+  const naesinNotice = input.naesin > 3.0
+    ? `<div class="error" style="margin-bottom:10px">이 앱은 <b>내신 상위 1~3등급</b> 기준으로 설계되었습니다. 3등급 초과 구간의 판정은 참고용으로만 보세요.</div>` : "";
   const summary = `
     <div class="summary">
       <div><span>국·수·탐 평균 백분위</span><b>${input.jungsiAvg.toFixed(1)}</b></div>
@@ -423,20 +463,20 @@ function renderList() {
     <tr>
       <td>${bandChip(r.overall)}</td>
       <td class="uname">${r.uni.name} <small>${r.uni.region}</small></td>
-      <td>${r.cut.jungsi != null ? r.cut.jungsi : "-"} ${bandChip(r.jungsi)}</td>
-      <td>${r.cut.gyogwa != null ? r.cut.gyogwa + "등급" : "-"} ${bandChip(r.gyogwa)}</td>
+      <td>${fmtJungsi(r.cut.jungsi)} ${bandChip(r.jungsi)}</td>
+      <td>${fmtNaesin(r.cut.gyogwa)} ${bandChip(r.gyogwa)}</td>
     </tr>`).join("");
 
   const specialNote = input.dept && isSpecialDept(input.dept)
     ? `<p class="fine">💊 ${deptLabel} 보유 대학 ${rows.length}곳만 표시됩니다. 의약학은 수능 최저·과목 지정 요건이 별도로 있습니다.</p>` : "";
 
-  box.innerHTML = `${summary}
+  box.innerHTML = `${naesinNotice}${summary}
     <table>
-      <thead><tr><th>종합판정</th><th>대학</th><th>정시컷(백분위·추정)</th><th>교과컷(내신·추정)</th></tr></thead>
+      <thead><tr><th>종합판정</th><th>대학</th><th>정시 70%컷 (평균)</th><th>교과 70%컷 (평균)</th></tr></thead>
       <tbody>${tr}</tbody>
     </table>
     ${specialNote}
-    <p class="fine">판정 기준 — 안정: 여유 충분 / 적정: 합격선 부근 / 소신: 약간 부족 / 도전: 격차 큼 / 위험: 현재로선 어려움. 종합판정은 정시·교과 중 더 유리한 쪽입니다. 컷은 선택한 학과(${deptLabel}) 기준 추정치입니다.</p>`;
+    <p class="fine">70%컷 = 합격자 10명 중 7등의 성적(안정 지원 기준선), 평균 = 합격자 전체 평균. 판정은 70%컷 기준 — 안정: 여유 충분 / 적정: 합격선 부근 / 소신: 약간 부족 / 도전: 격차 큼 / 위험: 현재로선 어려움. 종합판정은 정시·교과 중 더 유리한 쪽이며, 컷은 선택한 학과(${deptLabel}) 기준 추정치입니다.</p>`;
   box.hidden = false;
 
   // 목표 대학 선택지 갱신
@@ -475,13 +515,13 @@ function renderCoaching() {
     <div class="deptTable">
       <b>🏫 ${uni.name} 학과별 예상 합격선 (${input.track}계열, 내 성적 기준 판정)</b>
       <table>
-        <thead><tr><th>학과</th><th>정시컷(백분위)</th><th>교과컷(내신)</th><th>내 판정</th></tr></thead>
+        <thead><tr><th>학과</th><th>정시 70%컷 (평균)</th><th>교과 70%컷 (평균)</th><th>내 판정</th></tr></thead>
         <tbody>
           ${deptRows.map((r) => `
           <tr class="${r.special ? "spRow" : ""}">
             <td>${r.special ? "💊 " : ""}${r.name}</td>
-            <td>${r.cut.jungsi != null ? r.cut.jungsi : "-"}</td>
-            <td>${r.cut.gyogwa != null ? r.cut.gyogwa + "등급" : "-"}</td>
+            <td>${fmtJungsi(r.cut.jungsi)}</td>
+            <td>${fmtNaesin(r.cut.gyogwa)}</td>
             <td>${bandChip(r.band)}</td>
           </tr>`).join("")}
         </tbody>
@@ -494,6 +534,11 @@ function renderCoaching() {
     <p class="verdict">${c.verdict}</p>
     ${uni.note ? `<p class="fine">ℹ️ ${uni.note}</p>` : ""}
     ${routesHtml}
+    ${c.weightTips ? `
+    <div class="weightTips">
+      <b>${c.weightTips.title}</b>
+      <ul>${c.weightTips.items.map((t) => `<li>${t}</li>`).join("")}</ul>
+    </div>` : ""}
     ${deptTable}
     <div class="roadmap">
       <b>📅 지금 해야 할 일 (로드맵)</b>
@@ -509,7 +554,6 @@ document.addEventListener("DOMContentLoaded", () => {
     .map((s) => `<a href="${s.url}" target="_blank" rel="noopener">${s.name}</a>`)
     .join(" · ");
   rebuildDeptOptions();
-  $("track").addEventListener("change", rebuildDeptOptions);
   $("btnList").addEventListener("click", renderList);
   $("btnCoach").addEventListener("click", renderCoaching);
 });
