@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대입 전략 상담 — 나의 성적으로 갈 수 있는 대학 찾기</title>
+<style>
+  :root {
+    --bg: #f4f6fb; --card: #ffffff; --ink: #1c2333; --sub: #5b6478;
+    --line: #e3e7f0; --accent: #3554d1; --accent-soft: #e8edfb;
+    --safe: #14804a; --safe-bg: #e2f5ea;
+    --fit: #2563eb; --fit-bg: #e4edff;
+    --reach: #b45309; --reach-bg: #fdf0d9;
+    --challenge: #c2410c; --challenge-bg: #ffe9de;
+    --hard: #b91c1c; --hard-bg: #fde5e5;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.6;
+    padding: 24px 16px 64px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 28px; }
+  header h1 { font-size: 1.7rem; letter-spacing: -0.02em; }
+  header p { color: var(--sub); margin-top: 6px; font-size: 0.95rem; }
+  .badge {
+    display: inline-block; margin-top: 10px; padding: 4px 12px;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 22px; margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(20, 30, 60, 0.05);
+  }
+  .card h2 { font-size: 1.1rem; margin-bottom: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--sub); margin-bottom: 4px; }
+  input, select {
+    width: 100%; padding: 9px 10px; border: 1px solid var(--line);
+    border-radius: 8px; font-size: 0.95rem; background: #fbfcfe; color: var(--ink);
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .hint { font-size: 0.78rem; color: var(--sub); margin-top: 3px; }
+  button {
+    margin-top: 16px; padding: 11px 22px; border: none; border-radius: 9px;
+    background: var(--accent); color: #fff; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; width: 100%;
+  }
+  button:hover { filter: brightness(1.08); }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 0.9rem; }
+  th { text-align: left; padding: 8px 6px; border-bottom: 2px solid var(--line); color: var(--sub); font-size: 0.8rem; }
+  td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  td.uname { font-weight: 600; }
+  td.uname small { color: var(--sub); font-weight: 400; margin-left: 4px; }
+  .chip {
+    display: inline-block; padding: 1px 9px; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 700; vertical-align: 1px;
+  }
+  .chip.safe { color: var(--safe); background: var(--safe-bg); }
+  .chip.fit { color: var(--fit); background: var(--fit-bg); }
+  .chip.reach { color: var(--reach); background: var(--reach-bg); }
+  .chip.challenge { color: var(--challenge); background: var(--challenge-bg); }
+  .chip.hard { color: var(--hard); background: var(--hard-bg); }
+  .chip.none { color: var(--sub); background: var(--line); }
+  .summary { display: flex; flex-wrap: wrap; gap: 10px; }
+  .summary > div {
+    flex: 1 1 140px; background: var(--accent-soft); border-radius: 10px;
+    padding: 10px 14px; text-align: center;
+  }
+  .summary span { display: block; font-size: 0.75rem; color: var(--sub); }
+  .summary b { font-size: 1.25rem; color: var(--accent); }
+  .error { color: var(--hard); background: var(--hard-bg); padding: 12px; border-radius: 8px; font-size: 0.9rem; }
+  .fine { font-size: 0.78rem; color: var(--sub); margin-top: 10px; }
+  .verdict { background: var(--accent-soft); padding: 12px 14px; border-radius: 10px; margin: 10px 0 14px; }
+  .route { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .routeHead { display: flex; align-items: center; gap: 8px; }
+  .routeCuts { font-size: 0.85rem; color: var(--sub); margin: 4px 0 6px; }
+  .route ul, .roadmap ul { padding-left: 20px; font-size: 0.9rem; }
+  .route li, .roadmap li { margin-top: 5px; }
+  .roadmap { background: #fbfcfe; border: 1px dashed var(--line); border-radius: 10px; padding: 14px; margin-top: 14px; }
+  footer { text-align: center; font-size: 0.78rem; color: var(--sub); margin-top: 30px; }
+  footer a { color: var(--accent); }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎓 대입 전략 상담 프로그램</h1>
+    <p>현재 성적을 입력하면 지원 가능 대학과 목표 대학 맞춤 코칭을 제공합니다</p>
+    <span class="badge" id="dataVersion"></span>
+  </header>
+
+  <!-- STEP 1. 성적 입력 -->
+  <section class="card">
+    <h2>1️⃣ 내 정보 · 성적 입력</h2>
+    <div class="grid">
+      <div>
+        <label for="track">지망 계열</label>
+        <select id="track">
+          <option value="인문">인문·사회</option>
+          <option value="자연">자연·공학</option>
+        </select>
+      </div>
+      <div>
+        <label for="semester">이수한 내신 학기</label>
+        <select id="semester">
+          <option value="0">예비 고1 (아직 없음)</option>
+          <option value="1">고1 1학기까지</option>
+          <option value="2">고1 2학기까지</option>
+          <option value="3">고2 1학기까지</option>
+          <option value="4">고2 2학기까지</option>
+          <option value="5">고3 1학기까지 (완료)</option>
+        </select>
+      </div>
+      <div>
+        <label for="naesin">내신 평균 등급</label>
+        <input type="number" id="naesin" min="1" max="9" step="0.01" value="3.0">
+        <div class="hint">예비 고1은 목표 등급 입력</div>
+      </div>
+    </div>
+    <h2 style="margin-top:18px">모의고사 · 수능 성적 (백분위)</h2>
+    <div class="grid">
+      <div>
+        <label for="korean">국어 백분위</label>
+        <input type="number" id="korean" min="0" max="100" value="80">
+      </div>
+      <div>
+        <label for="math">수학 백분위</label>
+        <input type="number" id="math" min="0" max="100" value="80">
+      </div>
+      <div>
+        <label for="english">영어 등급 (절대평가)</label>
+        <select id="english">
+          <option value="1">1등급</option><option value="2" selected>2등급</option>
+          <option value="3">3등급</option><option value="4">4등급</option>
+          <option value="5">5등급</option><option value="6">6등급</option>
+          <option value="7">7등급</option><option value="8">8등급</option>
+          <option value="9">9등급</option>
+        </select>
+      </div>
+      <div>
+        <label for="tamgu1">탐구1 백분위</label>
+        <input type="number" id="tamgu1" min="0" max="100" value="80">
+      </div>
+      <div>
+        <label for="tamgu2">탐구2 백분위</label>
+        <input type="number" id="tamgu2" min="0" max="100" value="80">
+      </div>
+    </div>
+    <div class="hint" style="margin-top:8px">백분위는 성적표의 '백분위' 값 (등급만 안다면: 1등급≈96, 2등급≈89, 3등급≈77, 4등급≈62, 5등급≈40)</div>
+    <button id="btnList">📋 내 성적으로 갈 수 있는 대학 보기</button>
+  </section>
+
+  <!-- STEP 2. 결과 -->
+  <section class="card" id="listResult" hidden></section>
+
+  <!-- STEP 3. 목표 대학 코칭 -->
+  <section class="card" id="coachSection" hidden>
+    <h2>2️⃣ 목표 대학 선택 → 부족한 점 코칭</h2>
+    <label for="targetUni">목표 대학</label>
+    <select id="targetUni"></select>
+    <button id="btnCoach">🎯 맞춤 전략 코칭 받기</button>
+  </section>
+
+  <section class="card" id="coachResult" hidden></section>
+
+  <footer>
+    ⚠️ 본 프로그램의 합격선은 공개 입시결과 기반 <b>참고용 추정치</b>이며 실제 합격을 보장하지 않습니다.<br>
+    최종 지원 전 반드시 공식 자료를 확인하세요 — <span id="sources"></span>
+  </footer>
+</div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
