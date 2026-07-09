@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>이과 대입 전략 상담 — 내 성적으로 갈 수 있는 대학 찾기</title>
+<title>이과 대입 전략 상담 — 수시·정시 대시보드</title>
 <style>
   :root {
     --bg: #f4f6fb; --card: #ffffff; --ink: #1c2333; --sub: #5b6478;
@@ -13,6 +13,8 @@
     --reach: #b45309; --reach-bg: #fdf0d9;
     --challenge: #c2410c; --challenge-bg: #ffe9de;
     --hard: #b91c1c; --hard-bg: #fde5e5;
+    --susi: #0f766e; --susi-bg: #e6f5f3;
+    --jungsi: #1d4ed8; --jungsi-bg: #e7edfd;
   }
   * { box-sizing: border-box; margin: 0; }
   body {
@@ -20,8 +22,8 @@
     background: var(--bg); color: var(--ink); line-height: 1.6;
     padding: 24px 16px 64px;
   }
-  .wrap { max-width: 880px; margin: 0 auto; }
-  header { text-align: center; margin-bottom: 28px; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 24px; }
   header h1 { font-size: 1.7rem; letter-spacing: -0.02em; }
   header p { color: var(--sub); margin-top: 6px; font-size: 0.95rem; }
   .badge {
@@ -35,7 +37,7 @@
     box-shadow: 0 1px 3px rgba(20, 30, 60, 0.05);
   }
   .card h2 { font-size: 1.1rem; margin-bottom: 14px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
   label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--sub); margin-bottom: 4px; }
   input, select {
     width: 100%; padding: 9px 10px; border: 1px solid var(--line);
@@ -49,14 +51,14 @@
     cursor: pointer; width: 100%;
   }
   button:hover { filter: brightness(1.08); }
-  table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 0.9rem; }
-  th { text-align: left; padding: 8px 6px; border-bottom: 2px solid var(--line); color: var(--sub); font-size: 0.8rem; }
-  td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.88rem; }
+  th { text-align: left; padding: 8px 6px; border-bottom: 2px solid var(--line); color: var(--sub); font-size: 0.78rem; }
+  td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
   td.uname { font-weight: 600; }
-  td.uname small { color: var(--sub); font-weight: 400; margin-left: 4px; }
+  td.uname small { color: var(--sub); font-weight: 400; margin-left: 3px; }
   .chip {
     display: inline-block; padding: 1px 9px; border-radius: 999px;
-    font-size: 0.75rem; font-weight: 700; vertical-align: 1px;
+    font-size: 0.75rem; font-weight: 700; vertical-align: 1px; white-space: nowrap;
   }
   .chip.safe { color: var(--safe); background: var(--safe-bg); }
   .chip.fit { color: var(--fit); background: var(--fit-bg); }
@@ -64,45 +66,113 @@
   .chip.challenge { color: var(--challenge); background: var(--challenge-bg); }
   .chip.hard { color: var(--hard); background: var(--hard-bg); }
   .chip.none { color: var(--sub); background: var(--line); }
-  .summary { display: flex; flex-wrap: wrap; gap: 10px; }
+  .summary { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
   .summary > div {
-    flex: 1 1 140px; background: var(--accent-soft); border-radius: 10px;
+    flex: 1 1 160px; background: var(--accent-soft); border-radius: 10px;
     padding: 10px 14px; text-align: center;
   }
   .summary span { display: block; font-size: 0.75rem; color: var(--sub); }
-  .summary b { font-size: 1.25rem; color: var(--accent); }
+  .summary b { font-size: 1.15rem; color: var(--accent); }
+  .summary b.gradesLine { font-size: 1rem; }
   .error { color: var(--hard); background: var(--hard-bg); padding: 12px; border-radius: 8px; font-size: 0.9rem; }
   .fine { font-size: 0.78rem; color: var(--sub); margin-top: 10px; }
+  .avgTxt { color: var(--sub); font-weight: 400; }
   .verdict { background: var(--accent-soft); padding: 12px 14px; border-radius: 10px; margin: 10px 0 14px; }
   .route { border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
   .routeHead { display: flex; align-items: center; gap: 8px; }
   .routeCuts { font-size: 0.85rem; color: var(--sub); margin: 4px 0 6px; }
-  .route ul, .roadmap ul { padding-left: 20px; font-size: 0.9rem; }
-  .route li, .roadmap li { margin-top: 5px; }
+  .route ul, .roadmap ul, .weightTips ul { padding-left: 20px; font-size: 0.9rem; }
+  .route li, .roadmap li, .weightTips li { margin-top: 5px; }
   .roadmap { background: #fbfcfe; border: 1px dashed var(--line); border-radius: 10px; padding: 14px; margin-top: 14px; }
-  .deptTable { margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-  .deptTable table { margin-top: 8px; }
-  tr.spRow td { background: #fdf7ef; }
-  .avgTxt { color: var(--sub); font-weight: 400; }
   .weightTips { background: #f0f7f2; border: 1px solid #cfe8d8; border-radius: 10px; padding: 14px; margin-top: 14px; }
-  .weightTips ul { padding-left: 20px; font-size: 0.9rem; }
-  .weightTips li { margin-top: 6px; }
+  .deptTable { margin-top: 16px; border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  tr.spRow td { background: #fdf7ef; }
+
+  /* ---- 제도 설명 카드 ---- */
+  .sysGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .sysCard { border-radius: 12px; padding: 16px; font-size: 0.88rem; }
+  .sysCard.naesin { background: var(--susi-bg); border: 1px solid #bfe3de; }
+  .sysCard.suneung { background: var(--jungsi-bg); border: 1px solid #c6d6f8; }
+  .sysCard h3 { font-size: 0.98rem; margin-bottom: 6px; }
+  .sysCard.naesin h3 { color: var(--susi); }
+  .sysCard.suneung h3 { color: var(--jungsi); }
+  .sysCard table { font-size: 0.8rem; margin-top: 8px; background: rgba(255,255,255,.6); border-radius: 8px; }
+  .sysCard th, .sysCard td { padding: 4px 6px; text-align: center; }
+  .sysCard p { margin-top: 6px; }
+
+  /* ---- 대시보드 ---- */
+  .dashGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .panel { border-radius: 12px; border: 1px solid var(--line); background: var(--card); padding: 16px; overflow-x: auto; }
+  .panelHead { font-size: 1.05rem; font-weight: 800; padding-bottom: 8px; }
+  .susiPanel .panelHead { color: var(--susi); }
+  .jungsiPanel .panelHead { color: var(--jungsi); }
+  .panelHead small { font-weight: 600; color: var(--sub); font-size: 0.8rem; margin-left: 6px; }
+  .explain { font-size: 0.84rem; background: #fbfcfe; border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; color: #3a4358; }
+  .susiPanel .explain { background: var(--susi-bg); border-color: #bfe3de; }
+  .jungsiPanel .explain { background: var(--jungsi-bg); border-color: #c6d6f8; }
+  .cutRef { margin-top: 10px; font-size: 0.85rem; }
+  .cutRef summary { cursor: pointer; font-weight: 600; color: var(--jungsi); }
+  .cutRef table { font-size: 0.78rem; }
+  .cutRef td, .cutRef th { text-align: center; padding: 4px; }
+
+  /* ---- 추천 ---- */
+  .recoBox { border: 2px solid var(--accent-soft); background: #fdfefe; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .recoBox h3 { font-size: 1rem; }
+  .recoBox h3 small { color: var(--sub); font-weight: 500; }
+  .recoGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+  .recoTitle { font-size: 0.8rem; font-weight: 700; color: var(--sub); margin-bottom: 6px; }
+  .recoItem { background: var(--card); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; margin-bottom: 6px; font-size: 0.88rem; }
+  .recoItem.none { color: var(--sub); }
+  .recoRoute { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
+
+  .subGroupTitle { font-size: 0.9rem; font-weight: 700; margin: 16px 0 8px; }
+  .subGroupTitle.naesinT { color: var(--susi); }
+  .subGroupTitle.suneungT { color: var(--jungsi); }
+
   footer { text-align: center; font-size: 0.78rem; color: var(--sub); margin-top: 30px; }
   footer a { color: var(--accent); }
-  @media (max-width: 560px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 760px) {
+    .sysGrid, .dashGrid, .recoGrid { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>🎓 이과 대입 전략 상담 프로그램</h1>
-    <p>자연계열(이과) · 내신 상위 1~3등급 · 고1 학생 전용 — 성적을 입력하면 지원 가능 대학과 학과별 맞춤 코칭을 제공합니다</p>
+    <h1>🎓 이과 대입 전략 상담 대시보드</h1>
+    <p>자연계열(이과) · 내신 상위권 · 현재 고1(2028학년도 대입) 전용 — 과목별 성적을 입력하면 수시·정시를 나눠 최적의 학교를 제안합니다</p>
     <span class="badge" id="dataVersion"></span>
   </header>
 
+  <!-- STEP 0. 제도 설명 (내신 5등급제 / 수능 9등급제) -->
+  <section class="card">
+    <h2>📖 시작 전에 — 내신과 수능은 등급 체계가 다릅니다</h2>
+    <div class="sysGrid">
+      <div class="sysCard naesin">
+        <h3>📗 내신 = 5등급 상대평가 (수시의 기반)</h3>
+        <p>2025년 고1부터(현 고1 포함) 내신은 <b>5등급제</b>입니다. 학교 시험·수행평가로 과목별 등급이 매겨지며, <b>수시</b>(학생부교과·종합)의 핵심 자료입니다.</p>
+        <table>
+          <thead><tr><th>등급</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+          <tbody><tr><td>비율(누적)</td><td>상위 10%</td><td>34%</td><td>66%</td><td>90%</td><td>100%</td></tr></tbody>
+        </table>
+        <p class="fine">1등급이 상위 10%로 넓어진 대신, 상위권 대학은 1.0~1.3등급대에서 승부가 갈립니다. 아래 입력은 <b>과목별 등급(1.0~5.0)</b>으로 받습니다.</p>
+      </div>
+      <div class="sysCard suneung">
+        <h3>📘 수능·모의고사 = 9등급 상대평가 (정시의 기반)</h3>
+        <p>수능은 여전히 <b>9등급제</b>이며 <b>정시</b>의 기반입니다. 시험마다 난이도가 달라 원점수 등급컷은 변하지만, <b>비율(1등급 상위 4%)은 고정</b>이므로 백분위로 비교합니다.</p>
+        <table>
+          <thead><tr><th>등급</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6~9</th></tr></thead>
+          <tbody><tr><td>백분위 하한</td><td>96</td><td>89</td><td>77</td><td>60</td><td>40</td><td>…</td></tr></tbody>
+        </table>
+        <p class="fine">영어·한국사는 절대평가입니다. 2028 수능(현 고1)은 선택과목 없이 <b>통합사회·통합과학을 모두 응시</b>하는 통합형입니다.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- STEP 1. 성적 입력 -->
   <section class="card">
-    <h2>1️⃣ 내 정보 · 성적 입력</h2>
+    <h2>1️⃣ 과목별 성적 입력</h2>
     <div class="grid">
       <div>
         <label for="dept">희망 학과 (자연계열)</label>
@@ -120,22 +190,22 @@
           <option value="5">고3 1학기까지 (완료)</option>
         </select>
       </div>
-      <div>
-        <label for="naesin">내신 평균 등급</label>
-        <input type="number" id="naesin" min="1" max="9" step="0.01" value="2.0">
-        <div class="hint">상위 1~3등급 기준 설계</div>
-      </div>
     </div>
-    <h2 style="margin-top:18px">모의고사 · 수능 성적 (백분위)</h2>
+
+    <div class="subGroupTitle naesinT">📗 내신 — 과목별 등급 (5등급제, 1.0~5.0)</div>
     <div class="grid">
-      <div>
-        <label for="korean">국어 백분위</label>
-        <input type="number" id="korean" min="0" max="100" value="80">
-      </div>
-      <div>
-        <label for="math">수학 백분위</label>
-        <input type="number" id="math" min="0" max="100" value="80">
-      </div>
+      <div><label for="n_국어">국어</label><input type="number" id="n_국어" min="1" max="5" step="0.1" value="2.0"></div>
+      <div><label for="n_수학">수학</label><input type="number" id="n_수학" min="1" max="5" step="0.1" value="2.0"></div>
+      <div><label for="n_영어">영어</label><input type="number" id="n_영어" min="1" max="5" step="0.1" value="2.0"></div>
+      <div><label for="n_사회">사회(통합사회)</label><input type="number" id="n_사회" min="1" max="5" step="0.1" value="2.0"></div>
+      <div><label for="n_과학">과학(통합과학)</label><input type="number" id="n_과학" min="1" max="5" step="0.1" value="2.0"></div>
+    </div>
+    <div class="hint">같은 과목을 여러 학기 들었다면 평균 등급을 입력하세요. 대학마다 반영 교과·과목 수가 달라, 대학별 '반영 내신'은 자동으로 따로 계산됩니다.</div>
+
+    <div class="subGroupTitle suneungT">📘 수능 모의고사 — 백분위 (9등급제)</div>
+    <div class="grid">
+      <div><label for="korean">국어 백분위</label><input type="number" id="korean" min="0" max="100" value="80"></div>
+      <div><label for="math">수학 백분위</label><input type="number" id="math" min="0" max="100" value="80"></div>
       <div>
         <label for="english">영어 등급 (절대평가)</label>
         <select id="english">
@@ -146,21 +216,15 @@
           <option value="9">9등급</option>
         </select>
       </div>
-      <div>
-        <label for="tamgu1">탐구1 백분위</label>
-        <input type="number" id="tamgu1" min="0" max="100" value="80">
-      </div>
-      <div>
-        <label for="tamgu2">탐구2 백분위</label>
-        <input type="number" id="tamgu2" min="0" max="100" value="80">
-      </div>
+      <div><label for="tamgu1">통합사회 백분위</label><input type="number" id="tamgu1" min="0" max="100" value="80"></div>
+      <div><label for="tamgu2">통합과학 백분위</label><input type="number" id="tamgu2" min="0" max="100" value="80"></div>
     </div>
-    <div class="hint" style="margin-top:8px">백분위는 성적표의 '백분위' 값 (등급만 안다면: 1등급≈96, 2등급≈89, 3등급≈77, 4등급≈62, 5등급≈40)</div>
-    <button id="btnList">📋 내 성적으로 갈 수 있는 대학 보기</button>
+    <div class="hint">백분위는 성적표의 '백분위' 값. 등급만 안다면 등급별 대표값: 1등급≈98, 2등급≈93, 3등급≈83, 4등급≈69, 5등급≈50 (등급컷 표는 결과의 정시 대시보드 참고)</div>
+    <button id="btnList">📊 수시·정시 대시보드 분석하기</button>
   </section>
 
-  <!-- STEP 2. 결과 -->
-  <section class="card" id="listResult" hidden></section>
+  <!-- STEP 2. 대시보드 -->
+  <section class="card" id="dashboard" hidden></section>
 
   <!-- STEP 3. 목표 대학 코칭 -->
   <section class="card" id="coachSection" hidden>
@@ -173,8 +237,8 @@
   <section class="card" id="coachResult" hidden></section>
 
   <footer>
-    ⚠️ 본 프로그램의 합격선은 공개 입시결과 기반 <b>참고용 추정치</b>이며 실제 합격을 보장하지 않습니다.<br>
-    최종 지원 전 반드시 공식 자료를 확인하세요 — <span id="sources"></span>
+    ⚠️ 본 프로그램의 합격선·최저기준·반영법은 공개 자료 기반 <b>참고용 추정치</b>이며 실제 합격을 보장하지 않습니다.<br>
+    내신 컷은 9등급제 입결을 5등급제로 환산한 값입니다. 최종 지원 전 반드시 공식 자료를 확인하세요 — <span id="sources"></span>
   </footer>
 </div>
 <script src="data.js"></script>

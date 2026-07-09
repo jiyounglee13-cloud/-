@@ -128,12 +128,95 @@ const SPECIAL_DEPTS = [
   ] },
 ];
 
+// ---------------------------------------------------------------
+// 학생부교과전형 내신 반영 기준 (대학별 상이 — 추정, 매년 요강 확인 필수)
+//  - include: 반영 교과   - topN: 상위 N개 교과만 반영 (null = 전 과목)
+// ---------------------------------------------------------------
+const GYOGWA_BASIS = {
+  default: { include: ["국어", "수학", "영어", "과학"], topN: null, text: "국·영·수·과 전 과목" },
+  byUni: {
+    // 국공립대: 전 교과 반영
+    uos:      { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    seoultech:{ include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    pnu:      { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    knu:      { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    cnu:      { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    cbnu:     { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    jnu:      { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    jbnu:     { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    kangwon:  { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    jejunu:   { include: ["국어", "수학", "영어", "사회", "과학"], topN: null, text: "전 교과(국·영·수·사·과)" },
+    // 일부 대학: 상위 교과만 반영
+    gachon:   { include: ["국어", "수학", "영어", "사회", "과학"], topN: 4, text: "국·영·수·사·과 중 상위 4개 교과" },
+    hansung:  { include: ["국어", "수학", "영어", "사회", "과학"], topN: 3, text: "국·영·수·사·과 중 상위 3개 교과" },
+    sahmyook: { include: ["국어", "수학", "영어", "사회", "과학"], topN: 3, text: "국·영·수·사·과 중 상위 3개 교과" },
+    kyonggi:  { include: ["국어", "수학", "영어", "사회", "과학"], topN: 3, text: "국·영·수·사·과 중 상위 3개 교과" },
+    sangmyung:{ include: ["국어", "수학", "영어", "사회", "과학"], topN: 4, text: "국·영·수·사·과 중 상위 4개 교과" },
+    myongji:  { include: ["국어", "수학", "영어", "사회", "과학"], topN: 4, text: "국·영·수·사·과 중 상위 4개 교과" },
+  },
+};
+
+// ---------------------------------------------------------------
+// 학생부교과전형 수능 최저학력기준 (대학별·학과별 상이 — 추정)
+//  - count개 영역 등급 합 sum 이내 (탐구는 통합과학·통합사회 중 상위 1과목)
+//  - null = 수능 최저 없음
+// ---------------------------------------------------------------
+const MIN_REQUIREMENTS = {
+  byUni: {
+    yonsei: { count: 2, sum: 4, text: "2개 영역 등급 합 4 이내" },
+    korea:  { count: 3, sum: 7, text: "3개 영역 등급 합 7 이내" },
+    skku:   { count: 3, sum: 7, text: "3개 영역 등급 합 7 이내" },
+    sogang: { count: 3, sum: 7, text: "3개 영역 등급 합 7 이내" },
+    hanyang: null,
+    cau:    { count: 3, sum: 7, text: "3개 영역 등급 합 7 이내" },
+    khu:    { count: 2, sum: 5, text: "2개 영역 등급 합 5 이내" },
+    hufs:   { count: 2, sum: 4, text: "2개 영역 등급 합 4 이내" },
+    uos:    { count: 3, sum: 7, text: "3개 영역 등급 합 7 이내" },
+    konkuk: null,
+    dongguk: { count: 2, sum: 5, text: "2개 영역 등급 합 5 이내" },
+    hongik: { count: 3, sum: 8, text: "3개 영역 등급 합 8 이내" },
+    seoultech: { count: 2, sum: 6, text: "2개 영역 등급 합 6 이내" },
+    inha:   null,
+    ajou:   null,
+    soongsil: { count: 2, sum: 5, text: "2개 영역 등급 합 5 이내" },
+    kookmin: null,
+    sejong: { count: 2, sum: 6, text: "2개 영역 등급 합 6 이내" },
+    dankook: null,
+    kwangwoon: null,
+    sangmyung: null,
+    myongji: null,
+    gachon: { count: 1, sum: 3, text: "1개 영역 3등급 이내" },
+    kyonggi: null,
+    hansung: null,
+    sahmyook: null,
+    pnu:    { count: 2, sum: 5, text: "2개 영역 등급 합 5 이내" },
+    knu:    { count: 2, sum: 6, text: "2개 영역 등급 합 6 이내" },
+    cnu:    { count: 2, sum: 6, text: "2개 영역 등급 합 6 이내" },
+    cbnu:   { count: 2, sum: 7, text: "2개 영역 등급 합 7 이내" },
+    jnu:    { count: 2, sum: 7, text: "2개 영역 등급 합 7 이내" },
+    jbnu:   { count: 2, sum: 7, text: "2개 영역 등급 합 7 이내" },
+    kangwon: null,
+    jejunu: null,
+  },
+  // 의약학 계열은 대학 공통 수준의 높은 최저 적용 (추정)
+  special: {
+    의예:   { count: 3, sum: 4, text: "3개 영역 등급 합 4 이내" },
+    치의예: { count: 3, sum: 5, text: "3개 영역 등급 합 5 이내" },
+    한의예: { count: 3, sum: 5, text: "3개 영역 등급 합 5 이내" },
+    수의예: { count: 3, sum: 6, text: "3개 영역 등급 합 6 이내" },
+    약학:   { count: 3, sum: 6, text: "3개 영역 등급 합 6 이내" },
+  },
+};
+
 const ADMISSIONS_DATA = {
-  dataVersion: "2026학년도 입시결과 기준 · 이과 전용 (2026-07 갱신)",
-  admissionYear: "2028학년도 대입 대비 (현재 고1)",
+  dataVersion: "2026학년도 입시결과 기준 · 이과 전용 · 내신 5등급제 대응 (2026-07 갱신)",
+  admissionYear: "2028학년도 대입 대비 (현재 고1 — 내신 5등급제 첫 세대)",
   totalSemesters: 5, // 수시 반영 내신: 고1-1 ~ 고3-1 (5개 학기)
-  // 70%컷 ↔ 합격자 평균 환산 참고치
-  avgDelta: { jungsi: 0.6, naesin: 0.15 },
+  // 70%컷 ↔ 합격자 평균 환산 참고치 (naesin5: 5등급제 스케일)
+  avgDelta: { jungsi: 0.6, naesin: 0.15, naesin5: 0.08 },
+  // ⚠️ 아래 내신 컷(gyogwa/jonghap/special.g)은 공개된 "9등급제" 입결입니다.
+  //    2028대입(현 고1)은 내신 5등급제이므로 앱이 백분율 기준으로
+  //    5등급제 환산 컷을 자동 계산해 표시합니다.
   sources: [
     { name: "대입정보포털 어디가", url: "https://www.adiga.kr" },
     { name: "한국대학교육협의회", url: "https://www.kcue.or.kr" },
