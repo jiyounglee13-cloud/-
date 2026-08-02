@@ -822,5 +822,164 @@
     "related": [
       { "id": "meiji-restoration", "type": "영향", "note": "근대화한 메이지 일본의 압박으로 체결되었다." }
     ]
+  },
+  {
+    "id": "xinhai-revolution",
+    "title": "신해혁명과 중화민국",
+    "era": "CE",
+    "yearStart": 1911,
+    "yearEnd": 1912,
+    "track": "eastasia",
+    "region": "중국",
+    "category": "정치",
+    "importance": 5,
+    "description": "신해혁명(1911)으로 청 왕조가 무너지고 이듬해 중화민국이 수립되었다(1912).",
+    "significance": "2천 년 이상 이어진 중국 제정(帝政)의 종말이자 동아시아 근대 국민국가로의 전환점이다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Chinese Revolution (1911–12)'" }],
+    "contested": false
+  },
+  {
+    "id": "wwi",
+    "title": "제1차 세계대전",
+    "era": "CE",
+    "yearStart": 1914,
+    "yearEnd": 1918,
+    "track": "europe",
+    "region": "유럽·전 세계",
+    "category": "전쟁",
+    "importance": 5,
+    "description": "유럽 열강이 두 진영으로 나뉘어 벌인 총력전(1914–1918)으로 전례 없는 인명 피해를 냈다.",
+    "significance": "제국 질서의 붕괴, 러시아 혁명, 중동·식민지 재편 등 20세기 격변의 출발점이 되었다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'World War I'" }],
+    "contested": false
+  },
+  {
+    "id": "russian-revolution",
+    "title": "러시아 혁명",
+    "era": "CE",
+    "yearStart": 1917,
+    "track": "europe",
+    "region": "러시아",
+    "category": "정치",
+    "importance": 5,
+    "description": "1917년 두 차례 혁명으로 제정 러시아가 무너지고 볼셰비키가 권력을 잡아 이후 소비에트 체제가 성립되었다.",
+    "significance": "세계 최초의 사회주의 국가 수립으로, 20세기 냉전과 이념 대립의 한 축이 되었다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Russian Revolution'" }],
+    "contested": false,
+    "related": [
+      { "id": "wwi", "type": "인과", "note": "제1차 세계대전 중의 위기 속에서 발발했다." }
+    ]
+  },
+  {
+    "id": "march-first-movement",
+    "title": "3·1 운동",
+    "era": "CE",
+    "yearStart": 1919,
+    "track": "korea",
+    "region": "일제강점기 조선",
+    "category": "정치",
+    "importance": 5,
+    "description": "일제 강점하에서 전국적으로 일어난 비폭력 독립 만세운동(1919)으로, 대한민국 임시정부 수립으로 이어졌다.",
+    "significance": "한국 근대 민족운동의 분수령이자 이후 독립운동의 정신적 토대가 되었다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '3·1운동'" }],
+    "contested": false
+  },
+  {
+    "id": "turkey-republic",
+    "title": "터키 공화국 수립",
+    "era": "CE",
+    "yearStart": 1923,
+    "track": "south_asia_islam",
+    "region": "아나톨리아",
+    "category": "정치",
+    "importance": 4,
+    "description": "제1차 세계대전 후 오스만 제국이 해체되고, 무스타파 케말이 터키 공화국을 수립해(1923) 세속화 개혁을 추진했다.",
+    "significance": "이슬람권의 대표적 세속·근대 국민국가 실험으로, 오스만 600여 년의 종말을 의미한다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Turkey — The Republic of Turkey'" }],
+    "contested": false,
+    "related": [
+      { "id": "wwi", "type": "인과", "note": "제1차 세계대전 후 오스만 제국 해체에서 비롯되었다." }
+    ]
+  },
+  {
+    "id": "wwii",
+    "title": "제2차 세계대전",
+    "era": "CE",
+    "yearStart": 1939,
+    "yearEnd": 1945,
+    "track": "europe",
+    "region": "전 세계",
+    "category": "전쟁",
+    "importance": 5,
+    "description": "유럽과 아시아·태평양을 아우른 전 지구적 전쟁(1939–1945)으로, 홀로코스트와 핵무기 사용을 포함한 막대한 참상을 남겼다.",
+    "significance": "미·소 초강대국 체제와 냉전, 탈식민지화, 국제연합 창설 등 전후 세계질서의 기틀을 만들었다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'World War II'" }],
+    "contested": false
+  },
+  {
+    "id": "korea-liberation",
+    "title": "광복과 분단",
+    "era": "CE",
+    "yearStart": 1945,
+    "track": "korea",
+    "region": "한반도",
+    "category": "정치",
+    "importance": 5,
+    "description": "일본의 패망으로 한국이 광복을 맞았으나(1945), 미·소의 분할 점령으로 한반도가 남북으로 나뉘었다.",
+    "significance": "식민 지배의 종식이자 분단 체제의 시작으로, 이후 한국 현대사의 근본 조건이 되었다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '광복'" }],
+    "contested": false,
+    "related": [
+      { "id": "wwii", "type": "인과", "note": "제2차 세계대전에서 일본이 패망하며 광복을 맞았다." }
+    ]
+  },
+  {
+    "id": "india-independence",
+    "title": "인도 독립과 분단",
+    "era": "CE",
+    "yearStart": 1947,
+    "track": "south_asia_islam",
+    "region": "인도·파키스탄",
+    "category": "정치",
+    "importance": 5,
+    "description": "영국령 인도가 인도와 파키스탄으로 분리 독립하며(1947) 대규모 이주와 유혈 사태가 벌어졌다.",
+    "significance": "20세기 탈식민지화의 상징적 사건이자, 종교에 따른 분단이 남아시아 국제관계의 장기 갈등으로 남았다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Partition of India'" }],
+    "contested": false
+  },
+  {
+    "id": "prc-founding",
+    "title": "중화인민공화국 수립",
+    "era": "CE",
+    "yearStart": 1949,
+    "track": "eastasia",
+    "region": "중국",
+    "category": "정치",
+    "importance": 5,
+    "description": "국공내전 끝에 마오쩌둥이 이끄는 공산당이 중화인민공화국을 수립했다(1949).",
+    "significance": "동아시아 냉전 구도의 핵심 축이자, 이후 세계 정치·경제에 큰 영향을 미친 중국 현대사의 출발점이다.",
+    "sources": [{ "label": "Encyclopædia Britannica, \"People's Republic of China — establishment\"" }],
+    "contested": false,
+    "related": [
+      { "id": "xinhai-revolution", "type": "영향", "note": "신해혁명 이후 이어진 혼란과 내전 끝에 수립되었다." }
+    ]
+  },
+  {
+    "id": "korean-war",
+    "title": "한국전쟁",
+    "era": "CE",
+    "yearStart": 1950,
+    "yearEnd": 1953,
+    "track": "korea",
+    "region": "한반도",
+    "category": "전쟁",
+    "importance": 5,
+    "description": "1950년 북한의 남침으로 시작되어 중국·유엔군이 개입한 국제전(1950–1953)으로, 정전협정으로 마무리되었다.",
+    "significance": "분단을 고착시키고 냉전이 열전(熱戰)으로 표출된 대표적 사례로, 이후 동아시아 안보질서를 규정했다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '6·25전쟁'" }],
+    "contested": false,
+    "related": [
+      { "id": "korea-liberation", "type": "인과", "note": "광복 후의 분단이 전쟁으로 이어졌다." }
+    ]
   }
 ]

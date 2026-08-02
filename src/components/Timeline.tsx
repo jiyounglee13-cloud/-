@@ -200,6 +200,9 @@ export function Timeline({
   // 마커 배치(서브행 패킹) + 위치 맵(연결선용)
   const layout = useMemo(() => {
     const positions = new Map<string, { cx: number; cy: number }>();
+    // 라벨 밀도 조절: 픽셀/연이 작을수록(줌아웃·모바일) 높은 중요도의 라벨만 표시
+    const pxPerYear = x(1) - x(0);
+    const labelThreshold = pxPerYear > 3 ? 1 : pxPerYear > 1.2 ? 3 : pxPerYear > 0.6 ? 4 : 5;
     const lanes = TRACK_ORDER.map((track, i) => {
       const laneTop = MARGIN.top + i * LANE_HEIGHT;
       const items = events
@@ -214,8 +217,9 @@ export function Timeline({
           const markerRight = hasRange ? Math.max(x1, x0 + 6) : x0 + r;
           const label = e.title.length > 16 ? e.title.slice(0, 15) + '…' : e.title;
           const labelW = label.length * 8 + 8;
-          const wpx = markerRight - x0 + 6 + labelW;
-          return { e, x0, x1, hasRange, r, markerRight, label, wpx };
+          const labelAuto = e.importance >= labelThreshold;
+          const wpx = markerRight - x0 + (labelAuto ? 6 + labelW : 4);
+          return { e, x0, x1, hasRange, r, markerRight, label, labelAuto, wpx };
         });
       const rows = packRows(items.map((it) => ({ x0: it.x0, wpx: it.wpx })));
       const rowCount = rows.length ? Math.max(...rows) + 1 : 1;
@@ -498,15 +502,17 @@ export function Timeline({
                         strokeWidth={isSel ? 2 : 1}
                       />
                     )}
-                    <text
-                      x={labelX}
-                      y={it.cy + 4}
-                      fontSize={11}
-                      fill={active ? '#f1f5f9' : '#cbd5e1'}
-                      fontWeight={active ? 600 : 400}
-                    >
-                      {it.label}
-                    </text>
+                    {(it.labelAuto || active) && (
+                      <text
+                        x={labelX}
+                        y={it.cy + 4}
+                        fontSize={11}
+                        fill={active ? '#f1f5f9' : '#cbd5e1'}
+                        fontWeight={active ? 600 : 400}
+                      >
+                        {it.label}
+                      </text>
+                    )}
                   </g>
                 );
               })}
