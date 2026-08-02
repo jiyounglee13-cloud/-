@@ -11,6 +11,8 @@ interface Props {
   events: HistEvent[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  focusYear: number;
+  onFocusYear: (year: number) => void;
 }
 
 const MARGIN = { left: 132, right: 28, top: 52, bottom: 24 };
@@ -29,7 +31,7 @@ interface View {
  * 4레인 가로 타임라인 (D3는 스케일 계산만, SVG는 React가 렌더).
  * 마우스 휠: 커서 기준 확대/축소 · 드래그: 좌우 이동 · 사건 클릭: 상세.
  */
-export function Timeline({ events, selectedId, onSelect }: Props) {
+export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear }: Props) {
   const { ref, width } = useElementSize<HTMLDivElement>();
   const w = Math.max(width, 320);
   const plotHeight = LANE_HEIGHT * TRACK_ORDER.length;
@@ -100,6 +102,15 @@ export function Timeline({ events, selectedId, onSelect }: Props) {
   } | null>(null);
   const movedRef = useRef(false);
 
+  // 커서의 화면 x좌표 → 연도(플롯 영역 밖이면 null)
+  const clientXToYear = (clientX: number): number | null => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+    const px = clientX - rect.left;
+    if (px < MARGIN.left || px > w - MARGIN.right) return null;
+    return x.invert(px);
+  };
+
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
     movedRef.current = false;
     drag.current = {
@@ -109,10 +120,17 @@ export function Timeline({ events, selectedId, onSelect }: Props) {
       pointerId: e.pointerId,
       captured: false,
     };
+    const fy = clientXToYear(e.clientX);
+    if (fy != null) onFocusYear(fy);
   };
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
     const d = drag.current;
-    if (!d) return;
+    if (!d) {
+      // 버튼을 누르지 않은 hover → 포커스 라인 실시간 이동
+      const fy = clientXToYear(e.clientX);
+      if (fy != null) onFocusYear(fy);
+      return;
+    }
     const dx = e.clientX - d.startX;
     if (Math.abs(dx) > 3) {
       movedRef.current = true;
@@ -247,6 +265,46 @@ export function Timeline({ events, selectedId, onSelect }: Props) {
             stroke="#334155"
             strokeWidth={1}
           />
+
+          {/* 동시대 포커스 라인 */}
+          {(() => {
+            const fx = x(focusYear);
+            if (fx < MARGIN.left || fx > w - MARGIN.right) return null;
+            const label = formatSignedYear(focusYear);
+            const boxW = Math.max(44, label.length * 9 + 16);
+            return (
+              <g pointerEvents="none">
+                <line
+                  x1={fx}
+                  y1={MARGIN.top - 6}
+                  x2={fx}
+                  y2={MARGIN.top + plotHeight}
+                  stroke="#fbbf24"
+                  strokeWidth={1.5}
+                  strokeDasharray="5 3"
+                  opacity={0.9}
+                />
+                <rect
+                  x={fx - boxW / 2}
+                  y={MARGIN.top + plotHeight + 4}
+                  width={boxW}
+                  height={18}
+                  rx={9}
+                  fill="#fbbf24"
+                />
+                <text
+                  x={fx}
+                  y={MARGIN.top + plotHeight + 17}
+                  fontSize={11}
+                  fontWeight={700}
+                  fill="#0b1120"
+                  textAnchor="middle"
+                >
+                  {label}
+                </text>
+              </g>
+            );
+          })()}
 
           {/* 레인별 마커 */}
           {TRACK_ORDER.map((track, i) => (
