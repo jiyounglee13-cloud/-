@@ -9,6 +9,7 @@ interface Props {
   events: HistEvent[];
   focusYear: number;
   onSelect: (id: string) => void;
+  emphasize: boolean;
 }
 
 interface Picked {
@@ -42,7 +43,7 @@ function relLabel(p: Picked): string {
 }
 
 /** 포커스 연도 기준으로 4문화권의 동시대 사건을 나란히 비교 */
-export function ComparisonPanel({ events, focusYear, onSelect }: Props) {
+export function ComparisonPanel({ events, focusYear, onSelect, emphasize }: Props) {
   const picks = useMemo(
     () => TRACK_ORDER.map((t) => ({ track: t, ...pickForTrack(events, t, focusYear) })),
     [events, focusYear],
@@ -81,6 +82,11 @@ export function ComparisonPanel({ events, focusYear, onSelect }: Props) {
                                 {relLabel(p)}
                               </span>
                             </div>
+                            {emphasize && (
+                              <p className="mt-1 line-clamp-3 whitespace-normal text-[11px] leading-relaxed text-indigo-300/90">
+                                {p.e.significance}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </button>

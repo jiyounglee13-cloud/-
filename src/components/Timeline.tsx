@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { scaleLinear } from 'd3-scale';
 import type { ScaleLinear } from 'd3-scale';
-import type { HistEvent, Track } from '../types/event';
+import type { HistEvent, RelationType } from '../types/event';
 import { CATEGORY_COLORS, TRACK_LABELS, TRACK_ORDER } from '../lib/categories';
 import { eventEndSigned, eventStartSigned, formatSignedYear } from '../lib/time';
 import { dataExtent, packRows } from '../lib/layout';
@@ -13,25 +13,45 @@ interface Props {
   onSelect: (id: string) => void;
   focusYear: number;
   onFocusYear: (year: number) => void;
+  showAllLinks: boolean;
 }
 
 const MARGIN = { left: 132, right: 28, top: 52, bottom: 24 };
 const LANE_HEIGHT = 132;
 const ROW_HEIGHT = 30;
-const LANE_TOP_GAP = 30; // 레인 이름 아래 여백
-const MIN_SPAN = 8; // 최대 확대(연 단위 폭)
-const MAX_SPAN = 4000; // 최대 축소
+const LANE_TOP_GAP = 30;
+const MIN_SPAN = 8;
+const MAX_SPAN = 4000;
 
 interface View {
   min: number;
   max: number;
 }
 
+/** 연결 관계 타입별 선 스타일 */
+export function linkStyle(type: RelationType): { stroke: string; dash?: string; width: number } {
+  switch (type) {
+    case '인과':
+      return { stroke: '#f43f5e', width: 2 };
+    case '영향':
+      return { stroke: '#38bdf8', dash: '6 4', width: 1.75 };
+    case '동시대(무관)':
+      return { stroke: '#94a3b8', dash: '2 5', width: 1.5 };
+  }
+}
+
 /**
  * 4레인 가로 타임라인 (D3는 스케일 계산만, SVG는 React가 렌더).
- * 마우스 휠: 커서 기준 확대/축소 · 드래그: 좌우 이동 · 사건 클릭: 상세.
+ * 휠: 확대/축소 · 드래그: 좌우 이동 · hover: 포커스 라인/연결선 · 클릭: 상세.
  */
-export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear }: Props) {
+export function Timeline({
+  events,
+  selectedId,
+  onSelect,
+  focusYear,
+  onFocusYear,
+  showAllLinks,
+}: Props) {
   const { ref, width } = useElementSize<HTMLDivElement>();
   const w = Math.max(width, 320);
   const plotHeight = LANE_HEIGHT * TRACK_ORDER.length;
@@ -50,7 +70,6 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [panning, setPanning] = useState(false);
 
-  // 네이티브 wheel 핸들러의 stale closure 방지용 ref
   const viewRef = useRef(view);
   viewRef.current = view;
   const geomRef = useRef({ w, left: MARGIN.left, right: MARGIN.right });
@@ -69,7 +88,7 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
     return { min: center - span / 2, max: center + span / 2 };
   }, []);
 
-  // 휠 확대/축소 (passive:false 로 preventDefault)
+  // 휠 확대/축소 (passive:false)
   const svgRef = useRef<SVGSVGElement | null>(null);
   useEffect(() => {
     const svg = svgRef.current;
@@ -92,7 +111,6 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
     return () => svg.removeEventListener('wheel', onWheel);
   }, [clampView]);
 
-  // 드래그 팬
   const drag = useRef<{
     startX: number;
     startMin: number;
@@ -102,7 +120,6 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
   } | null>(null);
   const movedRef = useRef(false);
 
-  // 커서의 화면 x좌표 → 연도(플롯 영역 밖이면 null)
   const clientXToYear = (clientX: number): number | null => {
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return null;
@@ -126,7 +143,6 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
     const d = drag.current;
     if (!d) {
-      // 버튼을 누르지 않은 hover → 포커스 라인 실시간 이동
       const fy = clientXToYear(e.clientX);
       if (fy != null) onFocusYear(fy);
       return;
@@ -134,7 +150,6 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
     const dx = e.clientX - d.startX;
     if (Math.abs(dx) > 3) {
       movedRef.current = true;
-      // 실제 드래그가 시작될 때만 포인터 캡처 — 그래야 마커 '클릭'이 SVG로 삼켜지지 않음
       if (!d.captured) {
         try {
           e.currentTarget.setPointerCapture(d.pointerId);
@@ -179,6 +194,65 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
     return out;
   }, [x, w]);
 
+  // 마커 배치(서브행 패킹) + 위치 맵(연결선용)
+  const layout = useMemo(() => {
+    const positions = new Map<string, { cx: number; cy: number }>();
+    const lanes = TRACK_ORDER.map((track, i) => {
+      const laneTop = MARGIN.top + i * LANE_HEIGHT;
+      const items = events
+        .filter((e) => e.track === track)
+        .map((e) => {
+          const startSigned = eventStartSigned(e);
+          const endSigned = eventEndSigned(e);
+          const x0 = x(startSigned);
+          const hasRange = e.yearEnd != null && endSigned > startSigned;
+          const x1 = hasRange ? x(endSigned) : x0;
+          const r = 3 + e.importance;
+          const markerRight = hasRange ? Math.max(x1, x0 + 6) : x0 + r;
+          const label = e.title.length > 16 ? e.title.slice(0, 15) + '…' : e.title;
+          const labelW = label.length * 8 + 8;
+          const wpx = markerRight - x0 + 6 + labelW;
+          return { e, x0, x1, hasRange, r, markerRight, label, wpx };
+        });
+      const rows = packRows(items.map((it) => ({ x0: it.x0, wpx: it.wpx })));
+      const rowCount = rows.length ? Math.max(...rows) + 1 : 1;
+      const usable = LANE_HEIGHT - LANE_TOP_GAP - 8;
+      const effRow = Math.min(ROW_HEIGHT, usable / rowCount);
+      const placed = items.map((it, idx) => {
+        const cy = laneTop + LANE_TOP_GAP + rows[idx] * effRow + effRow / 2;
+        positions.set(it.e.id, { cx: it.x0, cy });
+        return { ...it, cy };
+      });
+      return { track, items: placed };
+    });
+    return { positions, lanes };
+  }, [events, x]);
+
+  // 그릴 연결선 계산 (활성 사건 = hover 우선, 없으면 선택)
+  const activeId = hoveredId ?? selectedId;
+  const links = useMemo(() => {
+    const out: {
+      a: string;
+      b: string;
+      type: RelationType;
+      note?: string;
+      active: boolean;
+    }[] = [];
+    const seen = new Set<string>();
+    for (const e of events) {
+      for (const r of e.related ?? []) {
+        const isActive = activeId != null && (e.id === activeId || r.id === activeId);
+        if (!showAllLinks && !isActive) continue;
+        if (!layout.positions.has(e.id) || !layout.positions.has(r.id)) continue;
+        const key = [e.id, r.id].sort().join('|') + '|' + r.type;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ a: e.id, b: r.id, type: r.type, note: r.note, active: isActive });
+      }
+    }
+    return out;
+  }, [events, showAllLinks, activeId, layout]);
+
   return (
     <div className="w-full">
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
@@ -200,10 +274,13 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
         >
           전체 보기
         </button>
-        <span className="ml-1">휠: 확대/축소 · 드래그: 좌우 이동 · 사건 클릭: 상세</span>
+        <span className="ml-1">휠: 확대/축소 · 드래그: 이동 · 사건 hover: 연결선 · 클릭: 상세</span>
       </div>
 
-      <div ref={ref} className="w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900/40">
+      <div
+        ref={ref}
+        className="w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900/40"
+      >
         <svg
           ref={svgRef}
           className="timeline-svg block"
@@ -226,7 +303,13 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
             const y0 = MARGIN.top + i * LANE_HEIGHT;
             return (
               <g key={track}>
-                <rect x={0} y={y0} width={w} height={LANE_HEIGHT} fill={i % 2 === 0 ? '#0f172a' : '#111a2e'} />
+                <rect
+                  x={0}
+                  y={y0}
+                  width={w}
+                  height={LANE_HEIGHT}
+                  fill={i % 2 === 0 ? '#0f172a' : '#111a2e'}
+                />
                 <line x1={0} y1={y0} x2={w} y2={y0} stroke="#1e293b" strokeWidth={1} />
                 <text x={12} y={y0 + 22} fill="#94a3b8" fontSize={13} fontWeight={600}>
                   {TRACK_LABELS[track]}
@@ -306,126 +389,115 @@ export function Timeline({ events, selectedId, onSelect, focusYear, onFocusYear 
             );
           })()}
 
+          {/* 사건 간 연결선 */}
+          <g clipPath="url(#plot-clip)" pointerEvents="none">
+            {links.map((lk, i) => {
+              const p1 = layout.positions.get(lk.a)!;
+              const p2 = layout.positions.get(lk.b)!;
+              const mx = (p1.cx + p2.cx) / 2;
+              const d = `M ${p1.cx} ${p1.cy} C ${mx} ${p1.cy}, ${mx} ${p2.cy}, ${p2.cx} ${p2.cy}`;
+              const st = linkStyle(lk.type);
+              const opacity = lk.active ? 0.95 : showAllLinks ? 0.25 : 0.9;
+              return (
+                <g key={`${lk.a}-${lk.b}-${i}`}>
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke={st.stroke}
+                    strokeWidth={lk.active ? st.width + 0.75 : st.width}
+                    strokeDasharray={st.dash}
+                    opacity={opacity}
+                    strokeLinecap="round"
+                  />
+                  {lk.active && !showAllLinks && (
+                    <g>
+                      <rect
+                        x={mx - 34}
+                        y={(p1.cy + p2.cy) / 2 - 9}
+                        width={68}
+                        height={16}
+                        rx={8}
+                        fill="#0b1120"
+                        stroke={st.stroke}
+                        strokeWidth={1}
+                        opacity={0.95}
+                      />
+                      <text
+                        x={mx}
+                        y={(p1.cy + p2.cy) / 2 + 3}
+                        fontSize={10}
+                        fontWeight={600}
+                        fill={st.stroke}
+                        textAnchor="middle"
+                      >
+                        {lk.type}
+                      </text>
+                    </g>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+
           {/* 레인별 마커 */}
-          {TRACK_ORDER.map((track, i) => (
-            <LaneMarkers
-              key={track}
-              track={track}
-              laneTop={MARGIN.top + i * LANE_HEIGHT}
-              events={events}
-              x={x}
-              hoveredId={hoveredId}
-              selectedId={selectedId}
-              onHover={setHoveredId}
-              onSelect={guardedSelect}
-            />
+          {layout.lanes.map((lane) => (
+            <g key={lane.track} clipPath="url(#plot-clip)">
+              {lane.items.map((it) => {
+                const color = CATEGORY_COLORS[it.e.category];
+                const isSel = selectedId === it.e.id;
+                const isHov = hoveredId === it.e.id;
+                const active = isSel || isHov;
+                const labelX = it.markerRight + 6;
+                return (
+                  <g
+                    key={it.e.id}
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      guardedSelect(it.e.id);
+                    }}
+                    onMouseEnter={() => setHoveredId(it.e.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {it.hasRange ? (
+                      <rect
+                        x={it.x0}
+                        y={it.cy - 5}
+                        width={Math.max(6, it.x1 - it.x0)}
+                        height={10}
+                        rx={4}
+                        fill={color}
+                        opacity={active ? 1 : 0.82}
+                        stroke={isSel ? '#ffffff' : 'none'}
+                        strokeWidth={isSel ? 1.5 : 0}
+                      />
+                    ) : (
+                      <circle
+                        cx={it.x0}
+                        cy={it.cy}
+                        r={active ? it.r + 1.5 : it.r}
+                        fill={color}
+                        opacity={active ? 1 : 0.88}
+                        stroke={isSel ? '#ffffff' : '#0b1120'}
+                        strokeWidth={isSel ? 2 : 1}
+                      />
+                    )}
+                    <text
+                      x={labelX}
+                      y={it.cy + 4}
+                      fontSize={11}
+                      fill={active ? '#f1f5f9' : '#cbd5e1'}
+                      fontWeight={active ? 600 : 400}
+                    >
+                      {it.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
           ))}
         </svg>
       </div>
     </div>
-  );
-}
-
-interface LaneProps {
-  track: Track;
-  laneTop: number;
-  events: HistEvent[];
-  x: ScaleLinear<number, number>;
-  hoveredId: string | null;
-  selectedId: string | null;
-  onHover: (id: string | null) => void;
-  onSelect: (id: string) => void;
-}
-
-function LaneMarkers({
-  track,
-  laneTop,
-  events,
-  x,
-  hoveredId,
-  selectedId,
-  onHover,
-  onSelect,
-}: LaneProps) {
-  const items = useMemo(() => {
-    return events
-      .filter((e) => e.track === track)
-      .map((e) => {
-        const x0 = x(eventStartSigned(e));
-        const startSigned = eventStartSigned(e);
-        const endSigned = eventEndSigned(e);
-        const hasRange = e.yearEnd != null && endSigned > startSigned;
-        const x1 = hasRange ? x(endSigned) : x0;
-        const r = 3 + e.importance;
-        const markerRight = hasRange ? Math.max(x1, x0 + 6) : x0 + r;
-        const label = e.title.length > 16 ? e.title.slice(0, 15) + '…' : e.title;
-        const labelW = label.length * 8 + 8;
-        const wpx = markerRight - x0 + 6 + labelW;
-        return { e, x0, x1, hasRange, r, markerRight, label, wpx };
-      });
-  }, [events, track, x]);
-
-  const rows = useMemo(() => packRows(items.map((it) => ({ x0: it.x0, wpx: it.wpx }))), [items]);
-  const rowCount = rows.length ? Math.max(...rows) + 1 : 1;
-  const usable = LANE_HEIGHT - LANE_TOP_GAP - 8;
-  const effRow = Math.min(ROW_HEIGHT, usable / rowCount);
-
-  return (
-    <g clipPath="url(#plot-clip)">
-      {items.map((it, idx) => {
-        const row = rows[idx];
-        const cy = laneTop + LANE_TOP_GAP + row * effRow + effRow / 2;
-        const color = CATEGORY_COLORS[it.e.category];
-        const isSel = selectedId === it.e.id;
-        const isHov = hoveredId === it.e.id;
-        const active = isSel || isHov;
-        const labelX = it.markerRight + 6;
-        return (
-          <g
-            key={it.e.id}
-            onClick={(ev) => {
-              ev.stopPropagation();
-              onSelect(it.e.id);
-            }}
-            onMouseEnter={() => onHover(it.e.id)}
-            onMouseLeave={() => onHover(null)}
-            style={{ cursor: 'pointer' }}
-          >
-            {it.hasRange ? (
-              <rect
-                x={it.x0}
-                y={cy - 5}
-                width={Math.max(6, it.x1 - it.x0)}
-                height={10}
-                rx={4}
-                fill={color}
-                opacity={active ? 1 : 0.82}
-                stroke={isSel ? '#ffffff' : 'none'}
-                strokeWidth={isSel ? 1.5 : 0}
-              />
-            ) : (
-              <circle
-                cx={it.x0}
-                cy={cy}
-                r={active ? it.r + 1.5 : it.r}
-                fill={color}
-                opacity={active ? 1 : 0.88}
-                stroke={isSel ? '#ffffff' : '#0b1120'}
-                strokeWidth={isSel ? 2 : 1}
-              />
-            )}
-            <text
-              x={labelX}
-              y={cy + 4}
-              fontSize={11}
-              fill={active ? '#f1f5f9' : '#cbd5e1'}
-              fontWeight={active ? 600 : 400}
-            >
-              {it.label}
-            </text>
-          </g>
-        );
-      })}
-    </g>
   );
 }
