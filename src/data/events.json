@@ -1,0 +1,486 @@
+[
+  {
+    "id": "tang-founding",
+    "title": "당(唐) 건국",
+    "era": "CE",
+    "yearStart": 618,
+    "track": "eastasia",
+    "region": "중국",
+    "category": "정치",
+    "importance": 5,
+    "description": "이연(고조)이 수(隋)를 이어 당을 세우고 장안을 수도로 삼았다(618). 태종(626 즉위) 대의 정관의 치를 거치며 율령·과거 등 통치 제도가 정비되었다.",
+    "significance": "당의 제도·문자(한자)·불교·율령이 동아시아의 국제 표준이 되어 신라·발해·일본이 이를 수용했다. 이른바 '동아시아 문화권' 형성의 핵심 축으로 평가된다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Tang dynasty'" }],
+    "contested": false
+  },
+  {
+    "id": "xuanzang-india",
+    "title": "현장(玄奘)의 인도 순례",
+    "era": "CE",
+    "yearStart": 629,
+    "yearEnd": 645,
+    "track": "eastasia",
+    "region": "중국·인도",
+    "category": "종교",
+    "importance": 3,
+    "description": "당의 승려 현장이 육로로 인도에 유학해 나란다 등에서 불경을 수집하고 645년 귀국, 『대당서역기』를 남기고 대규모 역경(譯經)을 수행했다.",
+    "significance": "동아시아와 인도를 잇는 불교·지식 교류의 상징. 굽타 이후 인도(나란다)의 불교 학문 중심지로서의 국제적 위상을 보여준다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Xuanzang'" }],
+    "contested": true,
+    "contestedNote": "출발 연도는 사료에 따라 627년 또는 629년으로 갈린다.",
+    "related": [
+      {
+        "id": "harsha-empire",
+        "type": "영향",
+        "note": "북인도의 하르샤가 현장을 궁정에서 후대하는 등 직접 교류가 있었다."
+      }
+    ]
+  },
+  {
+    "id": "hijra-622",
+    "title": "이슬람 성립 — 헤지라",
+    "era": "CE",
+    "yearStart": 622,
+    "track": "south_asia_islam",
+    "region": "아라비아",
+    "category": "종교",
+    "importance": 5,
+    "description": "무함마드가 메카에서 메디나로 이주(헤지라, 622)했으며 이 해가 이슬람력 원년이 되었다. 632년 그의 사후 정통 칼리파 시대로 이어졌다.",
+    "significance": "이슬람 공동체(움마)의 출발점. 이후 한 세기 만에 사산조 페르시아·서아시아·북아프리카로 급팽창하며 유라시아의 종교·정치 지형을 재편했다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Hijrah'" }],
+    "contested": false
+  },
+  {
+    "id": "harsha-empire",
+    "title": "하르샤바르다나의 북인도 통합",
+    "era": "CE",
+    "yearStart": 606,
+    "yearEnd": 647,
+    "track": "south_asia_islam",
+    "region": "북인도",
+    "category": "정치",
+    "importance": 3,
+    "description": "하르샤가 카나우지를 중심으로 북인도 대부분을 통합해 통치했다(재위 c.606–647). 그의 사후 제국은 빠르게 분열했다.",
+    "significance": "굽타 붕괴 이후 북인도의 마지막 대통합. 당시 인도는 힌두·불교 문명권으로, 남아시아를 '이슬람권'으로 뭉뚱그릴 수 없음을 보여주는 사례다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Harsha'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "xuanzang-india",
+        "type": "영향",
+        "note": "현장의 『대당서역기』에 하르샤의 치세가 기록되어 있다."
+      }
+    ]
+  },
+  {
+    "id": "yarmouk-636",
+    "title": "야르무크 전투와 동로마의 시리아 상실",
+    "era": "CE",
+    "yearStart": 636,
+    "track": "europe",
+    "region": "동로마(비잔틴)",
+    "category": "전쟁",
+    "importance": 3,
+    "description": "636년 야르무크 전투에서 이슬람군이 동로마군을 격파해 시리아·팔레스타인이 이슬람 지배로 넘어갔고, 642년경 이집트도 상실되었다.",
+    "significance": "지중해 동부의 그리스도교 세계가 이슬람권으로 급속히 재편되었다. 유럽(동로마)과 이슬람의 장기 대치 구도가 시작된 분기점으로 평가된다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Battle of the Yarmūk'" }],
+    "contested": false,
+    "related": [
+      { "id": "hijra-622", "type": "인과", "note": "이슬람 초기 팽창의 직접적 결과다." }
+    ]
+  },
+  {
+    "id": "silla-unification",
+    "title": "신라의 삼국통일",
+    "era": "CE",
+    "yearStart": 660,
+    "yearEnd": 676,
+    "track": "korea",
+    "region": "한반도",
+    "category": "전쟁",
+    "importance": 5,
+    "description": "신라가 당과 연합해 백제(660)와 고구려(668)를 멸망시키고, 이어진 나당전쟁(670–676)에서 당 세력을 축출해 대동강~원산만 이남을 확보했다.",
+    "significance": "한반도 최초의 광역 통일로 이후 발해와 함께 남북국 시대를 열었다. 당의 한반도 지배 시도를 군사적으로 저지한 점이 특히 주목된다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '삼국통일'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "tang-founding",
+        "type": "영향",
+        "note": "나·당 연합으로 백제·고구려를 멸망시켰으나 이후 나당전쟁으로 당을 축출했다."
+      }
+    ]
+  },
+  {
+    "id": "mongol-empire-1206",
+    "title": "칭기즈칸의 몽골 제국 성립",
+    "era": "CE",
+    "yearStart": 1206,
+    "track": "eastasia",
+    "region": "몽골",
+    "category": "정치",
+    "importance": 5,
+    "description": "테무진이 몽골 부족을 통일하고 쿠릴타이에서 칭기즈칸으로 추대되었다(1206). 이후 금·서하·중앙아시아·페르시아로 팽창했다.",
+    "significance": "유라시아 최대의 육상 제국이 출발했다. '팍스 몽골리카'로 동서 교역·기술, 나아가 흑사병까지 연결되는 유라시아 통합의 계기가 되었다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Genghis Khan'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "delhi-sultanate-1206",
+        "type": "동시대(무관)",
+        "note": "같은 1206년에 성립했으나 델리 술탄국과 인과관계는 없다(우연적 동시성)."
+      }
+    ]
+  },
+  {
+    "id": "delhi-sultanate-1206",
+    "title": "델리 술탄국 성립",
+    "era": "CE",
+    "yearStart": 1206,
+    "track": "south_asia_islam",
+    "region": "북인도",
+    "category": "정치",
+    "importance": 4,
+    "description": "쿠트브 웃딘 아이바크가 델리를 중심으로 술탄국(노예왕조)을 세웠다(1206). 북인도에 이슬람 정치권력이 본격적으로 정착했다.",
+    "significance": "남아시아에 이슬람 지배가 구조적으로 뿌리내린 전환점. 이후 수 세기에 걸친 힌두·이슬람 문명의 공존과 갈등 구도를 형성했다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Delhi sultanate'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "mongol-empire-1206",
+        "type": "동시대(무관)",
+        "note": "몽골 제국과 같은 1206년이지만 서로 무관한 별개 사건이다."
+      }
+    ]
+  },
+  {
+    "id": "magna-carta-1215",
+    "title": "마그나카르타(대헌장)",
+    "era": "CE",
+    "yearStart": 1215,
+    "track": "europe",
+    "region": "잉글랜드",
+    "category": "정치",
+    "importance": 4,
+    "description": "잉글랜드 존 왕이 귀족들의 압력으로 마그나카르타에 동의했다(1215). 왕권을 법으로 제한하는 조항을 포함했다.",
+    "significance": "후대에 '법의 지배'와 입헌주의의 상징으로 재해석되어 근대 헌정주의 서사의 출발점으로 인용된다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Magna Carta'" }],
+    "contested": true,
+    "contestedNote": "당대의 실제 의미(주로 귀족의 특권 보장)와 후대의 입헌주의적 재해석 사이에 큰 간극이 있어 '의미'는 해석 논쟁의 대상이다."
+  },
+  {
+    "id": "fourth-crusade-1204",
+    "title": "제4차 십자군의 콘스탄티노플 약탈",
+    "era": "CE",
+    "yearStart": 1204,
+    "track": "europe",
+    "region": "동로마(비잔틴)",
+    "category": "전쟁",
+    "importance": 3,
+    "description": "제4차 십자군이 목표를 바꿔 그리스도교 도시 콘스탄티노플을 함락·약탈하고 라틴 제국을 세웠다(1204). 비잔틴은 1261년 도시를 회복했다.",
+    "significance": "동서 교회(정교-가톨릭) 간 갈등을 격화시켰고 비잔틴의 국력을 크게 약화시켰다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Fourth Crusade'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "constantinople-1453",
+        "type": "영향",
+        "note": "1204년의 약탈이 비잔틴 장기 쇠퇴의 먼 배경이 되었다(직접 인과는 아님)."
+      }
+    ]
+  },
+  {
+    "id": "tripitaka-koreana",
+    "title": "고려 재조대장경(팔만대장경) 조성",
+    "era": "CE",
+    "yearStart": 1236,
+    "yearEnd": 1251,
+    "track": "korea",
+    "region": "고려",
+    "category": "문화",
+    "importance": 4,
+    "description": "고려가 몽골 침입(1231~) 격퇴를 기원하며 대장도감을 두고 8만여 목판의 재조대장경을 조성했다(1236–1251). 현재 합천 해인사에 소장되어 있다.",
+    "significance": "13세기 목판 인쇄·출판 기술의 정점을 보여주며 유네스코 세계기록유산으로 등재되었다. 국가적 위기에 대한 문화적 대응 사례로 평가된다.",
+    "sources": [
+      { "label": "유네스코 세계기록유산(Memory of the World), '고려대장경판 및 제경판'" },
+      { "label": "한국민족문화대백과사전, '재조대장경'" }
+    ],
+    "contested": false,
+    "related": [
+      {
+        "id": "mongol-empire-1206",
+        "type": "인과",
+        "note": "몽골의 고려 침입을 격퇴하려는 발원(發願)에서 조성되었다."
+      }
+    ]
+  },
+  {
+    "id": "gutenberg-press",
+    "title": "구텐베르크의 활판 인쇄술",
+    "era": "CE",
+    "yearStart": 1450,
+    "yearEnd": 1455,
+    "track": "europe",
+    "region": "마인츠",
+    "category": "과학기술",
+    "importance": 5,
+    "description": "요하네스 구텐베르크가 마인츠에서 금속활자·유성잉크·인쇄기를 결합한 활판 인쇄술을 실용화하고(c.1450) 42행 성서를 인쇄했다(c.1455).",
+    "significance": "유럽에서 지식의 대량 복제를 가능케 해 종교개혁·과학혁명·문해율 확산의 기반이 되었다. 정보 유통의 규모를 근본적으로 바꾼 사건으로 꼽힌다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Johannes Gutenberg'" }],
+    "contested": true,
+    "contestedNote": "정확한 발명 시점은 사료가 부족해 c.1450으로 추정하며, 42행 성서 완성도 c.1454–1455로 본다.",
+    "related": [
+      {
+        "id": "gabinja-1434",
+        "type": "동시대(무관)",
+        "note": "조선 갑인자(1434)와 시기가 가깝지만 상호 영향의 통설적 근거는 없다(독립 발명)."
+      }
+    ]
+  },
+  {
+    "id": "gabinja-1434",
+    "title": "조선 갑인자 주조",
+    "era": "CE",
+    "yearStart": 1434,
+    "track": "korea",
+    "region": "조선",
+    "category": "과학기술",
+    "importance": 4,
+    "description": "세종 16년(1434) 조선이 구리 활자 갑인자를 대량 주조해 인쇄 능률과 활자의 정교함을 크게 개선했다(계미자 1403의 후속).",
+    "significance": "동아시아 금속활자 인쇄의 높은 성취. 다만 방대한 한자 활자 수 등으로 유럽식 대중 인쇄로 확산되지는 않은 점이 대비된다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '갑인자'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "gutenberg-press",
+        "type": "동시대(무관)",
+        "note": "구텐베르크와 독립적으로 발전했으며, 직접 영향설은 통설이 아니다."
+      }
+    ]
+  },
+  {
+    "id": "hunminjeongeum",
+    "title": "훈민정음 창제·반포",
+    "era": "CE",
+    "yearStart": 1443,
+    "yearEnd": 1446,
+    "track": "korea",
+    "region": "조선",
+    "category": "문화",
+    "importance": 5,
+    "description": "세종이 훈민정음을 창제하고(1443) 『훈민정음 해례본』과 함께 반포했다(1446). 발음기관을 본뜬 자음과 천지인 삼재의 모음으로 이루어진 자질문자다.",
+    "significance": "백성의 문해를 목표로 한 독창적 문자 체계로 해례본이 유네스코 세계기록유산에 등재되었다. 동시대 유럽의 인쇄술 확산과 함께 '지식 접근성 확대'라는 주제로 대비된다(단, 서로 독립적 사건).",
+    "sources": [
+      { "label": "유네스코 세계기록유산(Memory of the World), '훈민정음 해례본'" },
+      { "label": "한국민족문화대백과사전, '훈민정음'" }
+    ],
+    "contested": false
+  },
+  {
+    "id": "cheugugi-1441",
+    "title": "측우기 제작",
+    "era": "CE",
+    "yearStart": 1441,
+    "track": "korea",
+    "region": "조선",
+    "category": "과학기술",
+    "importance": 3,
+    "description": "세종 23년(1441) 강우량을 정량 측정하는 표준 규격의 우량계인 측우기를 제작·보급했다.",
+    "significance": "국가 규모의 정량적 기상 관측 사례로 평가된다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '측우기'" }],
+    "contested": true,
+    "contestedNote": "'세계 최초의 우량계'라는 대중적 서술은 비교 대상·정의에 따라 논쟁적이므로 단정을 피한다."
+  },
+  {
+    "id": "tumu-crisis-1449",
+    "title": "명 토목보의 변",
+    "era": "CE",
+    "yearStart": 1449,
+    "track": "eastasia",
+    "region": "명(중국)",
+    "category": "전쟁",
+    "importance": 3,
+    "description": "명 정통제(영종)가 오이라트의 에센과 벌인 토목보 전투에서 대패해 포로가 되었다(1449). 이후 명은 북방 방어로 전환하고 만리장성을 증축했다.",
+    "significance": "명의 대외 팽창이 수세로 돌아서는 분기점. 정화 원정 종료(1433) 이후의 내향·해금 정책과 맞물려 동아시아 국제질서가 변화했다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Tumu incident'" }],
+    "contested": false
+  },
+  {
+    "id": "lodi-dynasty-1451",
+    "title": "델리 술탄국 로디 왕조 개창",
+    "era": "CE",
+    "yearStart": 1451,
+    "track": "south_asia_islam",
+    "region": "북인도",
+    "category": "정치",
+    "importance": 2,
+    "description": "바흘룰 로디가 델리 술탄국의 로디 왕조를 열었다(1451). 아프간계 왕조로, 1526년 파니파트 전투에서 무굴에 멸망했다.",
+    "significance": "유럽·동아시아가 격변하던 시기(인쇄술·콘스탄티노플 함락)에 남아시아가 독자적 정치 흐름을 이어갔음을 보여준다(동시적이나 서로 무관).",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Lodī dynasty'" }],
+    "contested": false
+  },
+  {
+    "id": "constantinople-1453",
+    "title": "콘스탄티노플 함락 — 비잔틴 멸망",
+    "era": "CE",
+    "yearStart": 1453,
+    "track": "europe",
+    "region": "동로마·오스만",
+    "category": "전쟁",
+    "importance": 5,
+    "description": "오스만 술탄 메흐메트 2세가 대포(우르반포)를 동원해 콘스탄티노플을 함락하고 비잔틴(동로마) 제국을 멸망시켰다(1453).",
+    "significance": "중세 동로마 세계의 종말. 그리스 학자·필사본의 서유럽 유입이 르네상스를 자극했다는 서사와 동서 육상 교역로 변화가 대항해시대를 촉발했다는 해석이 있으나, 인과의 강도는 논쟁적이다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Fall of Constantinople'" }],
+    "contested": true,
+    "contestedNote": "1453년이라는 연대는 확실하나, 르네상스·대항해시대를 '촉발'했다는 인과 서사의 강도는 학계에서 논쟁적이다.",
+    "related": [
+      {
+        "id": "fourth-crusade-1204",
+        "type": "영향",
+        "note": "1204년 약탈 이후 이어진 비잔틴의 장기 쇠퇴가 배경이 되었다."
+      }
+    ]
+  },
+  {
+    "id": "imjin-war",
+    "title": "임진왜란",
+    "era": "CE",
+    "yearStart": 1592,
+    "yearEnd": 1598,
+    "track": "korea",
+    "region": "조선",
+    "category": "전쟁",
+    "importance": 5,
+    "description": "도요토미 히데요시의 일본군이 조선을 침공(1592)해 정유재란(1597)을 포함, 1598년까지 이어진 국제전이다. 조선·명 연합이 방어했고 일본군은 철수했다.",
+    "significance": "동아시아 3국이 얽힌 16세기 최대 국제전. 명의 국력 소모와 일본의 정권 교체(도쿠가와)로 이어지며 동아시아 질서를 재편했다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '임진왜란'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "nurhaci-1616",
+        "type": "영향",
+        "note": "명의 국력 소모가 후금 성장의 배경으로 지목된다(단일 원인은 아님)."
+      },
+      {
+        "id": "sekigahara-1600",
+        "type": "영향",
+        "note": "종전 직후 일본 내 권력 재편으로 이어졌다."
+      }
+    ]
+  },
+  {
+    "id": "hansando-1592",
+    "title": "이순신 한산도 대첩",
+    "era": "CE",
+    "yearStart": 1592,
+    "track": "korea",
+    "region": "조선",
+    "category": "전쟁",
+    "importance": 4,
+    "description": "이순신이 지휘한 조선 수군이 한산도 앞바다에서 학익진 전법으로 일본 수군을 대파하고 남해 제해권을 확보했다(1592).",
+    "significance": "일본의 수륙병진 보급 전략을 좌절시켜 전쟁 국면에 결정적 영향을 미쳤다. 세계 해전사에서 자주 인용되는 전술적 승리다.",
+    "sources": [{ "label": "한국민족문화대백과사전, '한산도대첩'" }],
+    "contested": false,
+    "related": [
+      { "id": "imjin-war", "type": "인과", "note": "임진왜란 중에 벌어진 해전이다." }
+    ]
+  },
+  {
+    "id": "donguibogam-1610",
+    "title": "『동의보감』 완성",
+    "era": "CE",
+    "yearStart": 1610,
+    "track": "korea",
+    "region": "조선",
+    "category": "과학기술",
+    "importance": 3,
+    "description": "허준이 왕명으로 의서 『동의보감』을 완성했다(1610, 간행 1613). 동아시아 의학을 체계적으로 집성·분류했다.",
+    "significance": "동아시아 전통 의학의 집대성으로 유네스코 세계기록유산에 등재되었다. 임진왜란 이후 민생·의료 재건의 산물로 평가된다.",
+    "sources": [
+      { "label": "유네스코 세계기록유산(Memory of the World), '동의보감'" },
+      { "label": "한국민족문화대백과사전, '동의보감'" }
+    ],
+    "contested": false
+  },
+  {
+    "id": "sekigahara-1600",
+    "title": "세키가하라 전투와 에도 막부 성립",
+    "era": "CE",
+    "yearStart": 1600,
+    "yearEnd": 1603,
+    "track": "eastasia",
+    "region": "일본",
+    "category": "정치",
+    "importance": 4,
+    "description": "도쿠가와 이에야스가 세키가하라 전투(1600)에서 승리하고 1603년 에도 막부를 열었다. 이후 260여 년의 도쿠가와 평화가 이어졌다.",
+    "significance": "일본의 장기 안정과 쇄국 체제의 출발점. 임진왜란 종전 직후의 권력 재편으로 동아시아 국제관계에 영향을 주었다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Battle of Sekigahara'" }],
+    "contested": false
+  },
+  {
+    "id": "nurhaci-1616",
+    "title": "누르하치의 후금 건국",
+    "era": "CE",
+    "yearStart": 1616,
+    "track": "eastasia",
+    "region": "만주",
+    "category": "정치",
+    "importance": 4,
+    "description": "누르하치가 여진을 통합해 후금을 건국했다(1616). 이는 청(1636 개칭)으로 이어져 1644년 명을 대체했다.",
+    "significance": "명·청 교체의 서막. 이후 병자호란(1636)으로 조선에도 직접적 영향을 미쳤다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Nurhaci'" }],
+    "contested": false,
+    "related": [
+      {
+        "id": "imjin-war",
+        "type": "영향",
+        "note": "임진왜란으로 약화된 명(明)이 성장의 배경이 되었다(배경 요인의 하나)."
+      }
+    ]
+  },
+  {
+    "id": "akbar-mughal",
+    "title": "무굴 악바르 대제의 통치",
+    "era": "CE",
+    "yearStart": 1556,
+    "yearEnd": 1605,
+    "track": "south_asia_islam",
+    "region": "무굴",
+    "category": "정치",
+    "importance": 5,
+    "description": "무굴 황제 악바르가 북인도 대부분을 통합·중앙집권화하고(재위 1556–1605) 인두세(지즈야)를 폐지하는 등 종교 융화 정책을 폈다.",
+    "significance": "무굴 전성기의 기틀을 놓았다. 힌두·이슬람 융화 실험은 남아시아를 단일 '이슬람권'으로 환원할 수 없음을 보여주는 사례다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Akbar'" }],
+    "contested": false
+  },
+  {
+    "id": "shakespeare-hamlet",
+    "title": "셰익스피어 『햄릿』",
+    "era": "CE",
+    "yearStart": 1600,
+    "track": "europe",
+    "region": "잉글랜드",
+    "category": "문화",
+    "importance": 3,
+    "description": "윌리엄 셰익스피어가 비극 『햄릿』을 집필했다(c.1600). 엘리자베스 시대 영어 연극을 대표하는 작품이다.",
+    "significance": "근대 유럽 문학·연극의 상징. 인쇄술 확산과 도시 극장 문화의 결합을 보여준다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Hamlet'" }],
+    "contested": true,
+    "contestedNote": "집필·초연 연도는 c.1599–1601로 추정되며 정확한 연도는 확정되지 않았다."
+  },
+  {
+    "id": "galileo-telescope",
+    "title": "갈릴레오의 망원경 천체관측",
+    "era": "CE",
+    "yearStart": 1609,
+    "yearEnd": 1610,
+    "track": "europe",
+    "region": "파도바·피렌체",
+    "category": "과학기술",
+    "importance": 5,
+    "description": "갈릴레오가 개량한 망원경으로 달 표면·목성의 위성·금성의 위상을 관측하고 『별의 전령』(1610)을 펴냈다.",
+    "significance": "관측 기반 천문학으로 지동설을 뒷받침한 과학혁명의 결정적 전환점. 동시대 동아시아의 국가 주도 과학(측우기·의서)과 성격이 대비된다.",
+    "sources": [{ "label": "Encyclopædia Britannica, 'Galileo'" }],
+    "contested": false
+  }
+]

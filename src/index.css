@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #0b1120;
+  color: #e2e8f0;
+}
+
+/* 타임라인 SVG: 드래그 팬 중 텍스트 선택/터치 스크롤 방지 */
+.timeline-svg {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}

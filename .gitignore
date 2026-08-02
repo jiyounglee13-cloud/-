@@ -1,41 +1,30 @@
 # dependencies
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.js
 
-# next.js
-/.next/
-/out/
-next-env.d.ts
-
-# production
-/build
+# build output
+dist
+dist-ssr
 
 # misc
 .DS_Store
 *.pem
 
-# debug
+# debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# env files
+# env
 .env
 .env*.local
-
-# typescript
-*.tsbuildinfo
-
-# 합성 데이터 (재생성 가능 — manifest만 커밋)
-/data/synthetic/*.jsonl
-
-# 크롤링 수집 산출물 (fixture에서 재생성 가능)
-/data/incoming/
-
-# 평가 리포트 (재생성 가능)
-/data/eval/
 
 # editor
 .vscode/
 .idea/
+*.local
+
+# typescript
+*.tsbuildinfo
