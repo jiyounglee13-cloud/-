@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { HistEvent } from '../types/event';
 import { CATEGORY_COLORS, TRACK_LABELS } from '../lib/categories';
 import { formatEventYears } from '../lib/time';
@@ -17,13 +17,15 @@ export function EventDetail({ event, byId, onClose, onSelect }: Props) {
   const [aiModel, setAiModel] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  // 다른 사건으로 이동하면 AI 상태 초기화
+  // 다른 사건으로 이동하면 AI 상태 초기화 + 모달에 포커스(접근성)
   useEffect(() => {
     setAiText(null);
     setAiModel(null);
     setAiError(null);
     setAiLoading(false);
+    cardRef.current?.focus();
   }, [event.id]);
 
   useEffect(() => {
@@ -53,7 +55,12 @@ export function EventDetail({ event, byId, onClose, onSelect }: Props) {
       onClick={onClose}
     >
       <div
-        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl"
+        ref={cardRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="event-detail-title"
+        tabIndex={-1}
+        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* header */}
@@ -76,7 +83,9 @@ export function EventDetail({ event, byId, onClose, onSelect }: Props) {
                 </span>
               )}
             </div>
-            <h2 className="text-xl font-bold text-slate-100">{event.title}</h2>
+            <h2 id="event-detail-title" className="text-xl font-bold text-slate-100">
+              {event.title}
+            </h2>
             <p className="mt-1 text-sm text-slate-400">{formatEventYears(event)}</p>
           </div>
           <button

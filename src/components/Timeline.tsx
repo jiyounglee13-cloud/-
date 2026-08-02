@@ -3,7 +3,7 @@ import { scaleLinear } from 'd3-scale';
 import type { ScaleLinear } from 'd3-scale';
 import type { HistEvent, RelationType } from '../types/event';
 import { CATEGORY_COLORS, TRACK_LABELS, TRACK_ORDER } from '../lib/categories';
-import { eventEndSigned, eventStartSigned, formatSignedYear } from '../lib/time';
+import { eventEndSigned, eventStartSigned, formatEventYears, formatSignedYear } from '../lib/time';
 import { dataExtent, packRows } from '../lib/layout';
 import { useElementSize } from '../hooks/useElementSize';
 
@@ -54,9 +54,11 @@ export function Timeline({
 }: Props) {
   const { ref, width } = useElementSize<HTMLDivElement>();
   const w = Math.max(width, 320);
+  const narrow = w < 560;
+  const ML = narrow ? 84 : 132; // 좁은 화면: 좌측 레인 이름 여백 축소
   const plotHeight = LANE_HEIGHT * TRACK_ORDER.length;
   const height = MARGIN.top + plotHeight + MARGIN.bottom;
-  const plotWidth = Math.max(0, w - MARGIN.left - MARGIN.right);
+  const plotWidth = Math.max(0, w - ML - MARGIN.right);
 
   const extent = useMemo(() => dataExtent(events), [events]);
   const initialView = useMemo<View>(() => {
@@ -73,11 +75,11 @@ export function Timeline({
 
   const viewRef = useRef(view);
   viewRef.current = view;
-  const geomRef = useRef({ w, left: MARGIN.left, right: MARGIN.right });
-  geomRef.current = { w, left: MARGIN.left, right: MARGIN.right };
+  const geomRef = useRef({ w, left: ML, right: MARGIN.right });
+  geomRef.current = { w, left: ML, right: MARGIN.right };
 
   const x: ScaleLinear<number, number> = useMemo(
-    () => scaleLinear().domain([view.min, view.max]).range([MARGIN.left, w - MARGIN.right]),
+    () => scaleLinear().domain([view.min, view.max]).range([ML, w - MARGIN.right]),
     [view, w],
   );
 
@@ -125,7 +127,7 @@ export function Timeline({
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return null;
     const px = clientX - rect.left;
-    if (px < MARGIN.left || px > w - MARGIN.right) return null;
+    if (px < ML || px > w - MARGIN.right) return null;
     return x.invert(px);
   };
 
@@ -287,6 +289,8 @@ export function Timeline({
           className="timeline-svg block"
           width={w}
           height={height}
+          role="group"
+          aria-label="세계사 4문화권 타임라인. 휠로 확대·축소, 드래그로 이동, 사건은 클릭 또는 Enter 키로 상세 보기."
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
@@ -295,7 +299,7 @@ export function Timeline({
         >
           <defs>
             <clipPath id="plot-clip">
-              <rect x={MARGIN.left} y={MARGIN.top} width={plotWidth} height={plotHeight} />
+              <rect x={ML} y={MARGIN.top} width={plotWidth} height={plotHeight} />
             </clipPath>
           </defs>
 
@@ -312,7 +316,7 @@ export function Timeline({
                   fill={i % 2 === 0 ? '#0f172a' : '#111a2e'}
                 />
                 <line x1={0} y1={y0} x2={w} y2={y0} stroke="#1e293b" strokeWidth={1} />
-                <text x={12} y={y0 + 22} fill="#94a3b8" fontSize={13} fontWeight={600}>
+                <text x={12} y={y0 + 22} fill="#94a3b8" fontSize={narrow ? 11 : 13} fontWeight={600}>
                   {TRACK_LABELS[track]}
                 </text>
               </g>
@@ -322,7 +326,7 @@ export function Timeline({
           {/* 세로 눈금선 + 연도 라벨 */}
           {ticks.map((t) => {
             const px = x(t);
-            if (px < MARGIN.left - 1 || px > w - MARGIN.right + 1) return null;
+            if (px < ML - 1 || px > w - MARGIN.right + 1) return null;
             return (
               <g key={t}>
                 <line
@@ -342,7 +346,7 @@ export function Timeline({
 
           {/* 축 기준선 */}
           <line
-            x1={MARGIN.left}
+            x1={ML}
             y1={MARGIN.top - 6}
             x2={w - MARGIN.right}
             y2={MARGIN.top - 6}
@@ -353,7 +357,7 @@ export function Timeline({
           {/* 동시대 포커스 라인 */}
           {(() => {
             const fx = x(focusYear);
-            if (fx < MARGIN.left || fx > w - MARGIN.right) return null;
+            if (fx < ML || fx > w - MARGIN.right) return null;
             const label = formatSignedYear(focusYear);
             const boxW = Math.max(44, label.length * 9 + 16);
             return (
@@ -452,12 +456,23 @@ export function Timeline({
                 return (
                   <g
                     key={it.e.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${it.e.title}, ${formatEventYears(it.e)}, ${TRACK_LABELS[it.e.track]}, ${it.e.category}`}
                     onClick={(ev) => {
                       ev.stopPropagation();
                       guardedSelect(it.e.id);
                     }}
+                    onKeyDown={(ev) => {
+                      if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        onSelect(it.e.id);
+                      }
+                    }}
                     onMouseEnter={() => setHoveredId(it.e.id)}
                     onMouseLeave={() => setHoveredId(null)}
+                    onFocus={() => setHoveredId(it.e.id)}
+                    onBlur={() => setHoveredId(null)}
                     style={{ cursor: 'pointer' }}
                   >
                     {it.hasRange ? (

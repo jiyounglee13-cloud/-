@@ -38,9 +38,11 @@ export function Filters({ value, onChange, shown, total }: Props) {
     <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-3">
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <input
+          type="search"
           value={value.q}
           onChange={(e) => onChange({ ...value, q: e.target.value })}
           placeholder="검색 (제목·설명·의미·지역)"
+          aria-label="사건 검색"
           className={`w-56 ${inputCls}`}
         />
 
@@ -52,6 +54,7 @@ export function Filters({ value, onChange, shown, total }: Props) {
             <button
               key={c}
               onClick={() => toggleCat(c)}
+              aria-pressed={active}
               className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 ${
                 active ? 'border-transparent text-white' : 'border-slate-700 text-slate-300 hover:bg-slate-800'
               }`}
@@ -90,6 +93,7 @@ export function Filters({ value, onChange, shown, total }: Props) {
             onChange={(e) => onChange({ ...value, yearFrom: e.target.value })}
             inputMode="numeric"
             placeholder="from"
+            aria-label="시대 시작 연도 (BCE는 음수)"
             className={`w-16 ${inputCls}`}
           />
           <span className="text-slate-500">–</span>
@@ -98,6 +102,7 @@ export function Filters({ value, onChange, shown, total }: Props) {
             onChange={(e) => onChange({ ...value, yearTo: e.target.value })}
             inputMode="numeric"
             placeholder="to"
+            aria-label="시대 종료 연도 (BCE는 음수)"
             className={`w-16 ${inputCls}`}
           />
         </label>

@@ -55,8 +55,15 @@ for (const e of events) {
   if (e.era === 'CE' && e.yearStart > CURRENT_YEAR) {
     errors.push(`${e.id}: CE 연도(${e.yearStart})가 미래임`);
   }
-  if (e.yearEnd != null && e.yearEnd < e.yearStart) {
-    errors.push(`${e.id}: yearEnd(${e.yearEnd}) < yearStart(${e.yearStart})`);
+  if (e.yearEnd != null) {
+    // BCE는 숫자가 클수록 이른 시기 → 부호 있는 연도로 순서 검사
+    const s = e.era === 'BCE' ? -e.yearStart : e.yearStart;
+    const en = e.era === 'BCE' ? -e.yearEnd : e.yearEnd;
+    if (en < s) {
+      errors.push(
+        `${e.id}: 연대 순서 오류 — 종료(${e.era} ${e.yearEnd})가 시작(${e.era} ${e.yearStart})보다 이르다`,
+      );
+    }
   }
   if (e.sources.length === 0) {
     errors.push(`${e.id}: 출처(sources)가 없음 — 모든 연대에 출처 필요`);
