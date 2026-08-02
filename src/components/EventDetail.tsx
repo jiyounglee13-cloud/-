@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { HistEvent } from '../types/event';
 import { CATEGORY_COLORS, TRACK_LABELS } from '../lib/categories';
 import { formatEventYears } from '../lib/time';
+import { requestExplanation } from '../lib/aiExplain';
 
 interface Props {
   event: HistEvent;
@@ -10,8 +11,21 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
-/** 사건 상세: 사실 / 해석 / 연결 사건 / 출처 (사실·해석을 시각적으로 분리) */
+/** 사건 상세: 사실 / 해석 / 연결 사건 / 출처 (+ 선택적 AI 보조 설명) */
 export function EventDetail({ event, byId, onClose, onSelect }: Props) {
+  const [aiText, setAiText] = useState<string | null>(null);
+  const [aiModel, setAiModel] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  // 다른 사건으로 이동하면 AI 상태 초기화
+  useEffect(() => {
+    setAiText(null);
+    setAiModel(null);
+    setAiError(null);
+    setAiLoading(false);
+  }, [event.id]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -19,6 +33,19 @@ export function EventDetail({ event, byId, onClose, onSelect }: Props) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  const onGenerate = async () => {
+    setAiLoading(true);
+    setAiError(null);
+    const r = await requestExplanation(event);
+    setAiLoading(false);
+    if (r.ok) {
+      setAiText(r.text);
+      setAiModel(r.model);
+    } else {
+      setAiError(r.message);
+    }
+  };
 
   return (
     <div
@@ -138,6 +165,37 @@ export function EventDetail({ event, byId, onClose, onSelect }: Props) {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* AI 보조 설명 (실험적, 출처 없음) — 사실/출처와 시각적으로 분리 */}
+        <section className="mt-4 rounded-xl border border-dashed border-fuchsia-500/40 bg-fuchsia-500/5 p-4">
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <h3 className="text-xs font-semibold tracking-wide text-fuchsia-300">
+              AI 보조 설명 · 실험적
+            </h3>
+            <span className="rounded-full border border-fuchsia-500/40 px-2 py-0.5 text-[10px] text-fuchsia-300">
+              출처 없음
+            </span>
+          </div>
+          <p className="mb-2 text-[11px] leading-relaxed text-slate-400">
+            위 ‘사실’과 ‘의미’를 쉽게 풀어주는 보조 설명입니다. AI가 생성하며 <b>출처가 없고</b> 오류가
+            있을 수 있으니, 반드시 위의 사실·출처를 우선하세요.
+          </p>
+          {aiText ? (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-fuchsia-100">{aiText}</p>
+          ) : (
+            <button
+              onClick={onGenerate}
+              disabled={aiLoading}
+              className="rounded-lg border border-fuchsia-500/40 bg-fuchsia-500/10 px-3 py-1.5 text-xs text-fuchsia-200 hover:bg-fuchsia-500/20 disabled:opacity-50"
+            >
+              {aiLoading ? '생성 중…' : 'AI 보조 설명 생성'}
+            </button>
+          )}
+          {aiError && <p className="mt-2 text-[11px] text-amber-300">⚠ {aiError}</p>}
+          {aiText && aiModel && (
+            <p className="mt-2 text-[10px] text-slate-500">모델: {aiModel} · AI 생성(출처 없음)</p>
+          )}
         </section>
       </div>
     </div>

@@ -17,6 +17,6 @@
     "noUnusedParameters": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "scripts"],
+  "include": ["src", "scripts", "api"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

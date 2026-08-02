@@ -64,8 +64,9 @@ export function Timeline({
     return { min: extent.min - pad, max: extent.max + pad };
   }, [extent]);
 
+  // 초기 뷰는 마운트 시 1회만 적용(필터로 events가 바뀌어도 뷰를 리셋하지 않음).
+  // 필터 후 전체 프레임을 다시 보려면 '전체 보기' 버튼 사용.
   const [view, setView] = useState<View>(initialView);
-  useEffect(() => setView(initialView), [initialView]);
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [panning, setPanning] = useState(false);

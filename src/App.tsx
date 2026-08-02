@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { EVENTS, EVENTS_BY_ID } from './lib/loadEvents';
+import { eventEndSigned, eventStartSigned } from './lib/time';
+import { TRACK_LABELS } from './lib/categories';
+import type { HistEvent } from './types/event';
 import { Timeline } from './components/Timeline';
 import { EventDetail } from './components/EventDetail';
 import { ComparisonPanel } from './components/ComparisonPanel';
 import { Legend } from './components/Legend';
+import { Filters, EMPTY_FILTER, type FilterState } from './components/Filters';
 
 /** 연결선 범례 아이템 */
 function LinkLegendItem({ color, dash, label }: { color: string; dash?: string; label: string }) {
@@ -17,12 +21,40 @@ function LinkLegendItem({ color, dash, label }: { color: string; dash?: string; 
   );
 }
 
+function matchesFilter(e: HistEvent, f: FilterState): boolean {
+  if (e.importance < f.minImp) return false;
+  if (f.cats.length > 0 && !f.cats.includes(e.category)) return false;
+  const q = f.q.trim().toLowerCase();
+  if (q) {
+    const hay =
+      `${e.title} ${e.description} ${e.significance} ${e.region ?? ''} ${TRACK_LABELS[e.track]}`.toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  const fromRaw = f.yearFrom.trim();
+  const toRaw = f.yearTo.trim();
+  if (fromRaw !== '' || toRaw !== '') {
+    const from = fromRaw === '' ? -Infinity : Number(fromRaw);
+    const to = toRaw === '' ? Infinity : Number(toRaw);
+    if (!Number.isNaN(from) && !Number.isNaN(to)) {
+      const lo = Math.min(from, to);
+      const hi = Math.max(from, to);
+      const s = eventStartSigned(e);
+      const en = eventEndSigned(e);
+      if (en < lo || s > hi) return false; // 범위와 겹치지 않음
+    }
+  }
+  return true;
+}
+
 export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // 동시대 포커스 연도 (플래그십 클러스터인 15세기 중반으로 초기화)
   const [focusYear, setFocusYear] = useState<number>(1450);
   const [showAllLinks, setShowAllLinks] = useState(false);
   const [emphasize, setEmphasize] = useState(false);
+  const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
+
+  const filtered = useMemo(() => EVENTS.filter((e) => matchesFilter(e, filter)), [filter]);
+  // 상세의 '연결 사건'은 필터로 숨겨졌어도 조회되도록 전체 맵 사용
   const selected = selectedId ? EVENTS_BY_ID.get(selectedId) ?? null : null;
 
   return (
@@ -34,9 +66,10 @@ export default function App() {
           무엇을 하고 있었는지 비교합니다.
         </p>
         <p className="mt-1 text-xs text-slate-500">
-          Phase 3 · 시드 {EVENTS.length}건 · <span className="text-slate-300">사실</span>/
+          Phase 4 · 시드 {EVENTS.length}건 · <span className="text-slate-300">사실</span>/
           <span className="text-indigo-300">해석</span> 분리 ·{' '}
-          <span className="text-amber-300">동시대 비교</span> · 사건 간 연결선
+          <span className="text-amber-300">동시대 비교</span> · 연결선 · 필터·검색 ·{' '}
+          <span className="text-fuchsia-300">AI 보조(실험)</span>
         </p>
       </header>
 
@@ -44,7 +77,11 @@ export default function App() {
         <Legend />
       </div>
 
-      {/* Phase 3 컨트롤: 연결선 · 해석 강조 토글 + 연결선 범례 */}
+      <div className="mb-3">
+        <Filters value={filter} onChange={setFilter} shown={filtered.length} total={EVENTS.length} />
+      </div>
+
+      {/* 연결선 · 해석 강조 토글 + 연결선 범례 */}
       <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
         <label className="flex cursor-pointer items-center gap-1.5 text-slate-300">
           <input
@@ -75,7 +112,7 @@ export default function App() {
       <div className="flex flex-col gap-4 lg:flex-row">
         <div className="min-w-0 flex-1">
           <Timeline
-            events={EVENTS}
+            events={filtered}
             selectedId={selectedId}
             onSelect={setSelectedId}
             focusYear={focusYear}
@@ -83,12 +120,7 @@ export default function App() {
             showAllLinks={showAllLinks}
           />
         </div>
-        <ComparisonPanel
-          events={EVENTS}
-          focusYear={focusYear}
-          onSelect={setSelectedId}
-          emphasize={emphasize}
-        />
+        <ComparisonPanel events={filtered} focusYear={focusYear} onSelect={setSelectedId} emphasize={emphasize} />
       </div>
 
       {selected && (
