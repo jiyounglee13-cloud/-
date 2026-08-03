@@ -51,17 +51,17 @@ export function ComparisonPanel({ events, focusYear, onSelect, emphasize }: Prop
 
   return (
     <aside className="shrink-0 lg:w-80">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-        <div className="mb-0.5 text-xs text-slate-400">동시대 비교 (±{WINDOW_YEARS}년)</div>
-        <div className="mb-2 text-lg font-bold text-amber-300">{formatSignedYear(focusYear)}년 즈음</div>
-        <p className="mb-3 text-[11px] leading-relaxed text-slate-500">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-4">
+        <div className="mb-0.5 text-xs text-[var(--fg-muted)]">동시대 비교 (±{WINDOW_YEARS}년)</div>
+        <div className="mb-2 text-lg font-bold text-amber-500">{formatSignedYear(focusYear)}년 즈음</div>
+        <p className="mb-3 text-[11px] leading-relaxed text-[var(--fg-subtle)]">
           타임라인 위에 마우스를 올리면 그 시점 기준으로 각 문화권을 실시간 비교합니다.
         </p>
 
         <div className="space-y-3">
           {picks.map(({ track, within, nearest }) => (
-            <div key={track} className="rounded-lg border border-slate-800 bg-slate-800/30 p-3">
-              <div className="mb-2 text-xs font-semibold text-slate-300">{TRACK_LABELS[track]}</div>
+            <div key={track} className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
+              <div className="mb-2 text-xs font-semibold text-[var(--fg-muted)]">{TRACK_LABELS[track]}</div>
               {within.length > 0 ? (
                 <ul className="space-y-1.5">
                   {within.map((p) => (
@@ -73,17 +73,17 @@ export function ComparisonPanel({ events, focusYear, onSelect, emphasize }: Prop
                             style={{ backgroundColor: CATEGORY_COLORS[p.e.category] }}
                           />
                           <div className="min-w-0">
-                            <div className="truncate text-sm text-slate-200 group-hover:text-white">
+                            <div className="truncate text-sm text-[var(--fg)] group-hover:underline">
                               {p.e.title}
                             </div>
-                            <div className="text-[11px] text-slate-500">
+                            <div className="text-[11px] text-[var(--fg-subtle)]">
                               {formatEventYears(p.e)} ·{' '}
-                              <span className={p.rel === 'ongoing' ? 'text-amber-400' : ''}>
+                              <span className={p.rel === 'ongoing' ? 'text-amber-500' : ''}>
                                 {relLabel(p)}
                               </span>
                             </div>
                             {emphasize && (
-                              <p className="mt-1 line-clamp-3 whitespace-normal text-[11px] leading-relaxed text-indigo-300/90">
+                              <p className="mt-1 line-clamp-3 whitespace-normal text-[11px] leading-relaxed text-[var(--interp-fg)]">
                                 {p.e.significance}
                               </p>
                             )}
@@ -96,12 +96,12 @@ export function ComparisonPanel({ events, focusYear, onSelect, emphasize }: Prop
               ) : nearest ? (
                 <button
                   onClick={() => onSelect(nearest.e.id)}
-                  className="text-left text-[11px] text-slate-600 hover:text-slate-400"
+                  className="text-left text-[11px] text-[var(--fg-subtle)] hover:text-[var(--fg-muted)]"
                 >
                   이 시기 시드 없음 · 가장 가까운: {nearest.e.title} ({relLabel(nearest)})
                 </button>
               ) : (
-                <div className="text-[11px] text-slate-600">시드 데이터 없음</div>
+                <div className="text-[11px] text-[var(--fg-subtle)]">시드 데이터 없음</div>
               )}
             </div>
           ))}

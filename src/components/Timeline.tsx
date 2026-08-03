@@ -14,7 +14,38 @@ interface Props {
   focusYear: number;
   onFocusYear: (year: number) => void;
   showAllLinks: boolean;
+  theme: 'dark' | 'light';
 }
+
+/** SVG용 테마 팔레트 (SVG 색은 CSS 변수 대신 JS로 주입) */
+const PALETTE = {
+  dark: {
+    laneA: '#0f172a',
+    laneB: '#111a2e',
+    laneLine: '#1e293b',
+    grid: '#1e293b',
+    axis: '#334155',
+    tick: '#64748b',
+    track: '#94a3b8',
+    label: '#cbd5e1',
+    labelActive: '#f1f5f9',
+    ring: '#0b1120',
+    selRing: '#ffffff',
+  },
+  light: {
+    laneA: '#f8fafc',
+    laneB: '#eef2f7',
+    laneLine: '#e2e8f0',
+    grid: '#e6eaf1',
+    axis: '#94a3b8',
+    tick: '#64748b',
+    track: '#334155',
+    label: '#334155',
+    labelActive: '#0f172a',
+    ring: '#ffffff',
+    selRing: '#0f172a',
+  },
+} as const;
 
 const MARGIN = { left: 132, right: 28, top: 52, bottom: 24 };
 const LANE_HEIGHT = 132;
@@ -51,7 +82,9 @@ export function Timeline({
   focusYear,
   onFocusYear,
   showAllLinks,
+  theme,
 }: Props) {
+  const pal = PALETTE[theme];
   const { ref, width } = useElementSize<HTMLDivElement>();
   const w = Math.max(width, 320);
   const narrow = w < 560;
@@ -262,22 +295,22 @@ export function Timeline({
 
   return (
     <div className="w-full">
-      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-[var(--fg-muted)]">
         <button
           onClick={() => zoomBy(1 / 1.4)}
-          className="rounded border border-slate-700 px-2 py-1 hover:bg-slate-800"
+          className="rounded border border-[var(--border-strong)] px-2 py-1 hover:bg-[var(--panel-soft)]"
         >
           ＋ 확대
         </button>
         <button
           onClick={() => zoomBy(1.4)}
-          className="rounded border border-slate-700 px-2 py-1 hover:bg-slate-800"
+          className="rounded border border-[var(--border-strong)] px-2 py-1 hover:bg-[var(--panel-soft)]"
         >
           － 축소
         </button>
         <button
           onClick={resetView}
-          className="rounded border border-slate-700 px-2 py-1 hover:bg-slate-800"
+          className="rounded border border-[var(--border-strong)] px-2 py-1 hover:bg-[var(--panel-soft)]"
         >
           전체 보기
         </button>
@@ -286,7 +319,7 @@ export function Timeline({
 
       <div
         ref={ref}
-        className="w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-900/40"
+        className="w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel-soft)]"
       >
         <svg
           ref={svgRef}
@@ -317,10 +350,10 @@ export function Timeline({
                   y={y0}
                   width={w}
                   height={LANE_HEIGHT}
-                  fill={i % 2 === 0 ? '#0f172a' : '#111a2e'}
+                  fill={i % 2 === 0 ? pal.laneA : pal.laneB}
                 />
-                <line x1={0} y1={y0} x2={w} y2={y0} stroke="#1e293b" strokeWidth={1} />
-                <text x={12} y={y0 + 22} fill="#94a3b8" fontSize={narrow ? 11 : 13} fontWeight={600}>
+                <line x1={0} y1={y0} x2={w} y2={y0} stroke={pal.laneLine} strokeWidth={1} />
+                <text x={12} y={y0 + 22} fill={pal.track} fontSize={narrow ? 11 : 13} fontWeight={600}>
                   {TRACK_LABELS[track]}
                 </text>
               </g>
@@ -338,10 +371,10 @@ export function Timeline({
                   y1={MARGIN.top}
                   x2={px}
                   y2={MARGIN.top + plotHeight}
-                  stroke="#1e293b"
+                  stroke={pal.grid}
                   strokeWidth={1}
                 />
-                <text x={px} y={MARGIN.top - 14} fill="#64748b" fontSize={11} textAnchor="middle">
+                <text x={px} y={MARGIN.top - 14} fill={pal.tick} fontSize={11} textAnchor="middle">
                   {formatSignedYear(t)}
                 </text>
               </g>
@@ -354,7 +387,7 @@ export function Timeline({
             y1={MARGIN.top - 6}
             x2={w - MARGIN.right}
             y2={MARGIN.top - 6}
-            stroke="#334155"
+            stroke={pal.axis}
             strokeWidth={1}
           />
 
@@ -488,7 +521,7 @@ export function Timeline({
                         rx={4}
                         fill={color}
                         opacity={active ? 1 : 0.82}
-                        stroke={isSel ? '#ffffff' : 'none'}
+                        stroke={isSel ? pal.selRing : 'none'}
                         strokeWidth={isSel ? 1.5 : 0}
                       />
                     ) : (
@@ -498,7 +531,7 @@ export function Timeline({
                         r={active ? it.r + 1.5 : it.r}
                         fill={color}
                         opacity={active ? 1 : 0.88}
-                        stroke={isSel ? '#ffffff' : '#0b1120'}
+                        stroke={isSel ? pal.selRing : pal.ring}
                         strokeWidth={isSel ? 2 : 1}
                       />
                     )}
@@ -507,7 +540,7 @@ export function Timeline({
                         x={labelX}
                         y={it.cy + 4}
                         fontSize={11}
-                        fill={active ? '#f1f5f9' : '#cbd5e1'}
+                        fill={active ? pal.labelActive : pal.label}
                         fontWeight={active ? 600 : 400}
                       >
                         {it.label}
