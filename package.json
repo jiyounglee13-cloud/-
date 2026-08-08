@@ -1,41 +1,36 @@
 {
-  "name": "silson-appeal-assistant",
+  "name": "world-history-sync-timeline",
   "version": "0.1.0",
   "private": true,
-  "description": "한국형 Fight Health Insurance — 실손보험 이의신청서 초안 작성 보조 도구 (비영리)",
+  "type": "module",
+  "description": "세계사 동시대 비교 타임라인 — 유럽·동아시아·남아시아/이슬람·한국 병렬 레인",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test:rag": "tsx scripts/test-rag.ts",
-    "test:ann": "tsx scripts/test-ann.ts",
-    "test:qdrant": "tsx scripts/test-qdrant.ts",
-    "test:eval": "tsx scripts/test-eval.ts",
-    "test:llm": "tsx scripts/test-llm-openai.ts",
-    "eval": "tsx scripts/eval.ts",
-    "validate:kb": "tsx scripts/validate-kb.ts",
-    "ingest:cases": "tsx scripts/ingest-cases.ts",
-    "crawl:cases": "tsx scripts/crawl-cases.ts",
-    "test:scrub": "tsx scripts/test-scrub.ts",
-    "test:crawler": "tsx scripts/test-crawler-http.ts",
-    "gen:data": "tsx scripts/generate-synthetic-data.ts"
+    "validate": "tsx scripts/validate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
-    "next": "^14.2.35",
+    "d3-array": "^3.2.4",
+    "d3-scale": "^4.0.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^20.14.0",
+    "@types/d3-array": "^3.2.1",
+    "@types/d3-scale": "^4.0.8",
+    "@types/node": "^20.19.43",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "tsx": "^4.19.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4"
   }
 }

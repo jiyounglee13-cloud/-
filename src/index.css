@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 테마 변수 (기본: 다크) ─────────────────────────── */
+:root {
+  color-scheme: dark;
+  --bg: #0b1120;
+  --fg: #e2e8f0;
+  --fg-muted: #94a3b8;
+  --fg-subtle: #64748b;
+  --panel: #0f172a;
+  --panel-soft: #0f1a2e;
+  --card: #17233b;
+  --border: #1e293b;
+  --border-strong: #334155;
+  --fact-bg: rgba(30, 41, 59, 0.5);
+  --fact-border: #334155;
+  --interp-bg: rgba(79, 70, 229, 0.12);
+  --interp-border: rgba(99, 102, 241, 0.4);
+  --interp-fg: #c7d2fe;
+  --ai-bg: rgba(162, 28, 175, 0.08);
+  --ai-border: rgba(232, 121, 249, 0.4);
+  --ai-fg: #f5d0fe;
+  --contested-bg: rgba(245, 158, 11, 0.08);
+  --contested-border: rgba(245, 158, 11, 0.5);
+  --contested-fg: #fcd34d;
+  --chip-bg: #1e293b;
+  --chip-fg: #cbd5e1;
+}
+
+:root.theme-light {
+  color-scheme: light;
+  --bg: #f6f8fc;
+  --fg: #0f172a;
+  --fg-muted: #475569;
+  --fg-subtle: #64748b;
+  --panel: #ffffff;
+  --panel-soft: #f1f5f9;
+  --card: #f8fafc;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --fact-bg: #f1f5f9;
+  --fact-border: #e2e8f0;
+  --interp-bg: #eef2ff;
+  --interp-border: #c7d2fe;
+  --interp-fg: #3730a3;
+  --ai-bg: #fdf4ff;
+  --ai-border: #f0abfc;
+  --ai-fg: #86198f;
+  --contested-bg: #fffbeb;
+  --contested-border: #fcd34d;
+  --contested-fg: #b45309;
+  --chip-bg: #eef2f7;
+  --chip-fg: #334155;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+/* 타임라인 SVG: 드래그 팬 중 텍스트 선택/터치 스크롤 방지 */
+.timeline-svg {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* 키보드 포커스 표시(접근성) — 버튼·입력·링크·타임라인 마커에 공통 적용 */
+:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
